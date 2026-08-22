@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ultra Review"
+  short_description: "Five reviewers, one decision-ready report"
+  default_prompt: "Use $ultra-review to review my branch changes and explain what I should do before merging."
+policy:
+  allow_implicit_invocation: false
