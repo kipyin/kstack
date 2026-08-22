@@ -1,23 +1,22 @@
-# Cloud Agent environment setup (skills)
+# Cloud Agent skills
 
-When you have a new app repo and a new Cursor Cloud Agent environment that needs skills, follow this SOP. Do not vendor skills into the app repo.
+Wire a new app repo's Cloud Agent environment to this Origin repo. Skills stay here; the environment clones and copies them.
 
-## 1. Skills source
+Mac checkouts use [README.md](README.md) (`kstack link`). This page is the Cloud copy path.
 
-This repo on Origin is the skills source:
+## 1. Source
 
 https://origin.cursor.com/kipyin/skills.git
 
-Layout:
+`install.sh` copies `global/` then the selected project into `~/.cursor/skills`. Allowlist: `global`, `lighthouse`, `lightmind`. A new project name needs `<project>/` (even a `.gitkeep`) and an allowlist entry in `install.sh`.
 
-- `global/` — extras installed on every environment
-- `<project>/` — extras for that project only
+Lock-owned inventory: [lock.json](lock.json).
 
-Today the install allowlist is `global|lighthouse|lightmind`. For a new project name, add `<project>/` (even a `.gitkeep`) and allowlist it in `install.sh` if needed.
+**Done when:** the Origin URL, project name, and allowlist entry are decided.
 
 ## 2. App repo `.cursor/install.sh`
 
-After product setup (for example `npm ci`), append this block. Replace `<project>` with the project name (`global`, `lighthouse`, `lightmind`, or a newly allowlisted name).
+After product setup (for example `npm ci`), append this block. Replace `<project>` with the allowlisted name.
 
 ```bash
 rm -rf /tmp/skills
@@ -37,18 +36,24 @@ fi
 bash /tmp/skills/install.sh <project>
 ```
 
-`install.sh` pulls Matt Pocock official skills via `npx`, then copies `global/` plus `<project>/`. Do not vendor skills into the app repo.
+**Done when:** the app's `.cursor/install.sh` clones `kipyin/skills` to `/tmp/skills` and runs `install.sh <project>`.
 
 ## 3. Cloud env
 
 - **Install script:** `bash .cursor/install.sh`
 - **Start:** as the app needs
-- **Secret `CURSOR_API_KEY`:** Environment scope, Runtime Secret (not Personal / My Secrets — those are not available during Builds). Value is the Cursor User API key from cursor.com/dashboard/api.
+- **Secret `CURSOR_API_KEY`:** Environment scope, Runtime Secret (not Personal / My Secrets — those are unavailable during Builds). Value is the Cursor User API key from cursor.com/dashboard/api.
+
+**Done when:** the environment runs that install script and `CURSOR_API_KEY` is an Environment Runtime Secret.
 
 ## 4. Prove
 
-Merge to the environment’s build branch. Run a non-draft rebuild. Confirm the install log shows Origin clone OK, `Installed skills (<project>)`, exit 0, and the snapshot is active.
+Merge to the environment's build branch. Run a non-draft rebuild.
+
+**Done when:** the install log shows Origin clone OK, `Installed skills (<project>)`, exit 0, and the snapshot is active.
 
 ## 5. Optional smoke
 
-Run one Cloud Agent and check `~/.cursor/skills`.
+Run one Cloud Agent and list `~/.cursor/skills`. Cross-check lock-owned names against [lock.json](lock.json). Missing lock-owned folders means pins were not materialized in this repo before the clone — refresh from the Mac checkout ([README.md](README.md)) and push.
+
+**Done when:** `~/.cursor/skills` has the first-party globals, the selected project's folders, and every lock-owned name in `lock.json`.

@@ -1,0 +1,115 @@
+{
+  "$schema": "./lock.schema.json",
+  "$comment": "Vendored package pins. First-party skill folders not named in any package.skills are never overwritten by kstack sync/update.",
+  "version": 1,
+  "packages": {
+    "citrolabs/ego-lite": {
+      "source": "citrolabs/ego-lite",
+      "pin": "689f71a7bad8b78e22664ca8708a41ceaf263e93",
+      "tier": "global",
+      "skills": [
+        "ego-browser"
+      ],
+      "hashes": {
+        "ego-browser": "5a758c3393323dda529fd3809b64a8cde01b4a1d1e2ff10f8d76686345db9807"
+      },
+      "fetchedAt": "2026-08-22T10:44:35.672Z"
+    },
+    "herdrdev/herdr": {
+      "source": "herdrdev/herdr",
+      "pin": "1c76079f8b9494ec1c971c80fda34c116ecb89dd",
+      "tier": "global",
+      "skills": [
+        "herdr"
+      ],
+      "hashes": {
+        "herdr": "237ad2ab2d8123e2bb37956d3a41eed141f2d22a7c36e415b7876c0397679099"
+      },
+      "fetchedAt": "2026-08-22T10:44:39.963Z"
+    },
+    "iofficeai/officecli": {
+      "source": "iofficeai/officecli",
+      "pin": "1ced45e900782c5083ed550ddf328ee974e425e7",
+      "tier": "global",
+      "skills": [
+        "officecli"
+      ],
+      "hashes": {
+        "officecli": "c950d285ce60021712b4753fb2d9f592308d5622bab776229061dfecb1ce55d4"
+      },
+      "fetchedAt": "2026-08-22T10:46:44.685Z"
+    },
+    "mattpocock/skills": {
+      "source": "mattpocock/skills",
+      "pin": "5b15a47f2d7150f545fbcacbfe381787fc0230dc",
+      "tier": "global",
+      "skills": [
+        "ask-matt",
+        "code-review",
+        "codebase-design",
+        "diagnosing-bugs",
+        "domain-modeling",
+        "grill-me",
+        "grill-with-docs",
+        "grilling",
+        "handoff",
+        "implement",
+        "improve-codebase-architecture",
+        "prototype",
+        "research",
+        "resolving-merge-conflicts",
+        "setup-matt-pocock-skills",
+        "tdd",
+        "teach",
+        "to-questionnaire",
+        "to-spec",
+        "to-tickets",
+        "triage",
+        "wait-what",
+        "wayfinder",
+        "wizard",
+        "writing-for-agents"
+      ],
+      "hashes": {
+        "ask-matt": "b25d86fb36b1d294eeead5d7db529f86135f9671f2afcd607579a63bb2213769",
+        "code-review": "47f4e52c21694def9c7c11cbfbf891ca35eac7a93e395797515be3c8a409ae50",
+        "codebase-design": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+        "diagnosing-bugs": "77f3cf31bc99b2f49af943222526531fcc9fc41d047626d3640e875e85af3e84",
+        "domain-modeling": "327a2b50620e2fd70abc6893cd6965e76b20f8d0adb0dc2c8d5eb3845efb643e",
+        "grill-me": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
+        "grill-with-docs": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe",
+        "grilling": "10ff989e7498b23b5acb49d5048f11dcd906757d2f79c5cdf8a00001381296f2",
+        "handoff": "7c62de979fdc7ac32fb5ddb2146156c917f80ee070d30fadc9d40343c4b6ed25",
+        "implement": "6d3fd9e83b8f36e5213854779db49b256a457a7ebb4a503e53fa7dcff696adc3",
+        "improve-codebase-architecture": "d1ac25511a936ff4250a48dbcefda363837d6bb9321b3cba73df99fa37270a75",
+        "prototype": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3",
+        "research": "985569f15739c713d6784887c3d186d4ef9ac85bec5ad9c068d25bf0739928e4",
+        "resolving-merge-conflicts": "9d8114f8ef0b31f535a265fc05c364bd8cf2e2895a830040e06c22acb11f54b0",
+        "setup-matt-pocock-skills": "2bcd89e97777cdb705914424e39c97d5db524c8eb4eafac8120778a07774f0ec",
+        "tdd": "cb01f66bebfaa25fa1f88e6b7e769cd9fd9f35b1120b8563749820738814c927",
+        "teach": "a32df9dcdfc0c4fdc1c98e1ed3940c5f56b84c1aa90ff60346f32b8b53915b43",
+        "to-questionnaire": "b5eb929842ee0e93d867c5e906d183d350f2f2d149eaeaa86967d94d8eda1d3b",
+        "to-spec": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
+        "to-tickets": "5c9fba69845c2519b9b35b9af42ae5142c21f8ca15ac2123dc2722002c8058ae",
+        "triage": "623a2ed692bdc77d2090e2a3dea3b627dd722ad3bbaca0be83aada75292c8fc4",
+        "wait-what": "e3f44e3ccbc0e7b62f20ba70b295fc9c9f4aa3f96c77168faee1c71bacbf4215",
+        "wayfinder": "fee6e1d0c50f0e736b4ef8a599060c959afae904c9a97d82c97f049fcc3aa0f1",
+        "wizard": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
+        "writing-for-agents": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a"
+      },
+      "fetchedAt": "2026-08-22T10:44:35.272Z"
+    },
+    "modem-dev/hunk": {
+      "source": "modem-dev/hunk",
+      "pin": "eb88a9d915938e0c106489dd9dec1d23007fd5f8",
+      "tier": "global",
+      "skills": [
+        "hunk-review"
+      ],
+      "hashes": {
+        "hunk-review": "3be51363a248b83db2210f8ef5a59b54ab5ce4f78e856b08431420f85a2b0878"
+      },
+      "fetchedAt": "2026-08-22T10:44:38.658Z"
+    }
+  }
+}

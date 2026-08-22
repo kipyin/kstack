@@ -1,0 +1,27 @@
+{
+  "name": "kstack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Link, sync, and inventory Origin skills for Mac checkouts and Cloud copies.",
+  "type": "module",
+  "bin": {
+    "kstack": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test 'dist/**/*.test.js'"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "smol-toml": "^1.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
+  }
+}

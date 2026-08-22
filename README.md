@@ -1,57 +1,50 @@
-# skills
+# kstack
 
-Cursor skills for Kip Yin. This is the Origin skills repo (`https://origin.cursor.com/kipyin/skills.git`).
+My personal skill management repo. This repo is the Single Source of Truth for all projects.
 
-Official Matt Pocock skills are **not** stored here. They are installed at runtime with:
+There are two ways to use this repo: manage local skills, and install them on a Cursor Cloud environment.
+
+
+| | Mac | Cloud |
+| --- | --- | --- |
+| Checkout | `~/Code/skills` | clone to `/tmp/skills` ([SETUP.md](SETUP.md)) |
+| Install | `kstack link` (symlink) | `./install.sh [global\|lighthouse\|lightmind]` (copy) |
+
+`install.sh` never fetches. Refresh pinned third-party skills with `kstack sync` / `update` / `add` on a machine that can reach the sources.
+
+## Use `kstack` on Mac
 
 ```
-npx skills@latest add mattpocock/skills
+origin repo clone kipyin/skills ~/Code/skills
+cd ~/Code/skills/packages/kstack && npm install && npm run build && npm link
+cd ~/Code/skills && kstack link
 ```
 
-That command installs the **25-skill Mattpocock Skills group**, not the General group.
+`kstack link` replaces existing symlinks. A real directory in the way fails the command. `--force` deletes that directory — only use it if you mean to throw the copy away.
 
-## Layout
+Where symlinks go: [kstack.toml](kstack.toml). Override with `--repo`, `--config`, `KSTACK_REPO`, or `KSTACK_CONFIG`.
 
-```
-global/          # extras installed on every project
-  show-me/
-  talk-normal/
-  ultra-review/
-  humanizer-zh/
-  explain-diff-html/
-lighthouse/      # Lighthouse-only project skills
-lightmind/       # Lightmind-only project skills (none yet)
-install.sh
-```
-
-## Install
-
-Clone with Origin, then run `install.sh`:
+## Set up on Cursor Cloud (let an agent do it!)
 
 ```
 origin repo clone kipyin/skills /tmp/skills
-bash /tmp/skills/install.sh
+bash /tmp/skills/install.sh              # global only
+bash /tmp/skills/install.sh lighthouse   # global + lighthouse/
 ```
 
-`install.sh` always:
+New Cloud Agent env: [SETUP.md](SETUP.md).
 
-1. Installs those 25 official skills globally for Cursor (`npx … --global --agent cursor --yes --copy`, one `--skill` flag per name).
-2. Copies every skill directory under `global/` into `~/.cursor/skills`.
-
-Pass a project name to also copy that project's skill directories:
+## Commands
 
 ```
-# Matt 25 + global extras only
-bash /tmp/skills/install.sh
-bash /tmp/skills/install.sh global
-
-# Lighthouse (Clara): also copy lighthouse/*
-bash /tmp/skills/install.sh lighthouse
-
-# Lightmind: also copy lightmind/*
-bash /tmp/skills/install.sh lightmind
+kstack list [dir]
+kstack status
+kstack link [--force]
+kstack sync [pkg]              # rewrite owned folders at the current pin
+kstack update [pkg|skill]      # bump pin, then rewrite owned folders
+kstack add <source> --scope global|lighthouse|lightmind [--skill name]...
 ```
 
-Unknown project names fail. Do not add Lighthouse or Lightmind skills to `global/`.
+`sync` / `update` only touch folders listed in [lock.json](lock.json). Hand-written skills are left alone.
 
-Cloud Agent environments: see [SETUP.md](SETUP.md).
+Keep project-only skills out of `global/`.

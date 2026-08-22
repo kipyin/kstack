@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Cloud / VM install: copy skill folders from this checkout into ~/.cursor/skills.
+# Never fetches packages and never runs npx. Vendored lock-owned skills are
+# already flattened into global/ (and project tiers).
+#
+# Mac checkouts should use `kstack link` instead of this script.
 set -euo pipefail
 
 DEST="${HOME}/.cursor/skills"
@@ -20,33 +25,6 @@ case "$PROJECT" in
     exit 1
     ;;
 esac
-
-npx --yes skills@latest add mattpocock/skills --global --agent cursor --yes --copy \
-  --skill ask-matt \
-  --skill code-review \
-  --skill codebase-design \
-  --skill diagnosing-bugs \
-  --skill domain-modeling \
-  --skill grill-me \
-  --skill grill-with-docs \
-  --skill grilling \
-  --skill handoff \
-  --skill implement \
-  --skill improve-codebase-architecture \
-  --skill prototype \
-  --skill research \
-  --skill resolving-merge-conflicts \
-  --skill setup-matt-pocock-skills \
-  --skill tdd \
-  --skill teach \
-  --skill to-questionnaire \
-  --skill to-spec \
-  --skill to-tickets \
-  --skill triage \
-  --skill wait-what \
-  --skill wayfinder \
-  --skill wizard \
-  --skill writing-for-agents
 
 mkdir -p "$DEST"
 
