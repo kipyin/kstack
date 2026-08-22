@@ -4,6 +4,23 @@ set -euo pipefail
 DEST="${HOME}/.cursor/skills"
 WORKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if [[ $# -gt 1 ]]; then
+  echo "error: unexpected extra arguments: ${*:2}" >&2
+  echo "usage: $0 [global|lighthouse|lightmind]" >&2
+  exit 1
+fi
+
+PROJECT="${1:-global}"
+
+case "$PROJECT" in
+  global|lighthouse|lightmind) ;;
+  *)
+    echo "error: unknown project '${PROJECT}'." >&2
+    echo "Expected: global, lighthouse, or lightmind (omit for global only)." >&2
+    exit 1
+    ;;
+esac
+
 npx --yes skills@latest add mattpocock/skills --global --agent cursor --yes --copy \
   --skill ask-matt \
   --skill code-review \
@@ -33,16 +50,28 @@ npx --yes skills@latest add mattpocock/skills --global --agent cursor --yes --co
 
 mkdir -p "$DEST"
 
-EXTRAS=(show-me talk-normal ultra-review humanizer-zh explain-diff-html)
-for name in "${EXTRAS[@]}"; do
-  src="${WORKDIR}/${name}"
-  if [[ ! -d "$src" ]]; then
-    echo "error: missing extra skill directory: $src" >&2
+copy_skill_dirs() {
+  local src_root="$1"
+  local label="$2"
+
+  if [[ ! -d "$src_root" ]]; then
+    echo "error: missing ${label} directory: $src_root" >&2
     exit 1
   fi
-  rm -rf "${DEST}/${name}"
-  cp -R "$src" "${DEST}/${name}"
-done
 
-echo "Installed skills into $DEST:"
+  local src name
+  while IFS= read -r -d '' src; do
+    name="$(basename "$src")"
+    rm -rf "${DEST}/${name}"
+    cp -R "$src" "${DEST}/${name}"
+  done < <(find "$src_root" -mindepth 1 -maxdepth 1 -type d ! -name '.*' -print0)
+}
+
+copy_skill_dirs "${WORKDIR}/global" "global"
+
+if [[ "$PROJECT" != "global" ]]; then
+  copy_skill_dirs "${WORKDIR}/${PROJECT}" "$PROJECT"
+fi
+
+echo "Installed skills (${PROJECT}) into $DEST:"
 ls -1 "$DEST"
