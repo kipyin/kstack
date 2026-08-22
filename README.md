@@ -7,7 +7,7 @@ There are two ways to use this repo: manage local skills, and install them on a 
 
 | | Mac | Cloud |
 | --- | --- | --- |
-| Checkout | `~/Code/skills` | clone to `/tmp/skills` ([SETUP.md](SETUP.md)) |
+| Checkout | `~/Code/kstack` | clone to `/tmp/kstack` ([SETUP.md](SETUP.md)) |
 | Install | `kstack link` (symlink) | `./install.sh [global\|lighthouse\|lightmind]` (copy) |
 
 `install.sh` never fetches. Refresh pinned third-party skills with `kstack sync` / `update` / `add` on a machine that can reach the sources.
@@ -15,9 +15,9 @@ There are two ways to use this repo: manage local skills, and install them on a 
 ## Use `kstack` on Mac
 
 ```
-origin repo clone kipyin/skills ~/Code/skills
-cd ~/Code/skills/packages/kstack && npm install && npm run build && npm link
-cd ~/Code/skills && kstack link
+origin repo clone kipyin/kstack ~/Code/kstack
+cd ~/Code/kstack/packages/kstack && npm install && npm run build && npm link
+cd ~/Code/kstack && kstack link
 ```
 
 `kstack link` replaces existing symlinks. A real directory in the way fails the command. `--force` deletes that directory — only use it if you mean to throw the copy away.
@@ -27,9 +27,9 @@ Where symlinks go: [kstack.toml](kstack.toml). Override with `--repo`, `--config
 ## Set up on Cursor Cloud (let an agent do it!)
 
 ```
-origin repo clone kipyin/skills /tmp/skills
-bash /tmp/skills/install.sh              # global only
-bash /tmp/skills/install.sh lighthouse   # global + lighthouse/
+origin repo clone kipyin/kstack /tmp/kstack
+bash /tmp/kstack/install.sh              # global only
+bash /tmp/kstack/install.sh lighthouse   # global + lighthouse/
 ```
 
 New Cloud Agent env: [SETUP.md](SETUP.md).

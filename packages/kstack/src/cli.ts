@@ -23,7 +23,7 @@ Commands:
   add <source> --scope <tier> [--skill name]...
                              Fetch once, write into a tier, add/update lock entries
 
-Mac: clone to ~/Code/skills, then \`kstack link\`.
+Mac: clone to ~/Code/kstack, then \`kstack link\`.
 Cloud VMs: run ./install.sh [global|lighthouse|lightmind] 
 
 Overrides: --repo, --config, KSTACK_REPO, KSTACK_CONFIG.

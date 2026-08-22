@@ -36,7 +36,7 @@ export function writeToml(paths: {
   const list = (values: string[]): string =>
     `[${values.map(quote).join(", ")}]`;
   return [
-    `skills_repo = "~/Code/skills"`,
+    `skills_repo = "~/Code/kstack"`,
     ``,
     `[paths]`,
     `global = ${list(paths.global ?? [])}`,

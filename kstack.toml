@@ -1,9 +1,9 @@
 # Where `kstack link` puts symlinks (Mac). Cloud uses install.sh instead.
-# This file lives at the repo root. Mac checkout default: ~/Code/skills.
+# This file lives at the repo root. Mac checkout default: ~/Code/kstack.
 #
 # Overrides: --repo, --config, KSTACK_REPO, KSTACK_CONFIG
 
-skills_repo = "~/Code/skills"
+skills_repo = "~/Code/kstack"
 
 [paths]
 global = ["~/.agents/skills", "~/.cursor/skills"]

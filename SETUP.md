@@ -6,7 +6,7 @@ Mac checkouts use [README.md](README.md) (`kstack link`). This page is the Cloud
 
 ## 1. Source
 
-https://origin.cursor.com/kipyin/skills.git
+https://origin.cursor.com/kipyin/kstack.git
 
 `install.sh` copies `global/` then the selected project into `~/.cursor/skills`. Allowlist: `global`, `lighthouse`, `lightmind`. A new project name needs `<project>/` (even a `.gitkeep`) and an allowlist entry in `install.sh`.
 
@@ -19,8 +19,8 @@ Lock-owned inventory: [lock.json](lock.json).
 After product setup (for example `npm ci`), append this block. Replace `<project>` with the allowlisted name.
 
 ```bash
-rm -rf /tmp/skills
-: "${CURSOR_API_KEY:?CURSOR_API_KEY secret missing; needed to clone Origin kipyin/skills}"
+rm -rf /tmp/kstack
+: "${CURSOR_API_KEY:?CURSOR_API_KEY secret missing; needed to clone Origin kipyin/kstack}"
 export PATH="/exec-daemon/tools:${HOME}/.local/bin:${PATH}"
 if ! command -v origin >/dev/null 2>&1; then
   curl -fsSL https://downloads.cursor.com/origin/install.sh | sh
@@ -29,14 +29,14 @@ if ! origin auth login --api-key "$CURSOR_API_KEY"; then
   echo "origin auth login failed." >&2
   exit 1
 fi
-if ! origin repo clone kipyin/skills /tmp/skills; then
-  echo "origin repo clone of kipyin/skills failed." >&2
+if ! origin repo clone kipyin/kstack /tmp/kstack; then
+  echo "origin repo clone of kipyin/kstack failed." >&2
   exit 1
 fi
-bash /tmp/skills/install.sh <project>
+bash /tmp/kstack/install.sh <project>
 ```
 
-**Done when:** the app's `.cursor/install.sh` clones `kipyin/skills` to `/tmp/skills` and runs `install.sh <project>`.
+**Done when:** the app's `.cursor/install.sh` clones `kipyin/kstack` to `/tmp/kstack` and runs `install.sh <project>`.
 
 ## 3. Cloud env
 

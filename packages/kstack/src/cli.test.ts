@@ -12,7 +12,7 @@ describe("parseArgv", () => {
   it("parses add with repeated --skill and --scope", () => {
     const parsed = parseArgv([
       "--repo",
-      "/tmp/skills",
+      "/tmp/kstack",
       "add",
       "owner/repo",
       "--scope",
@@ -23,7 +23,7 @@ describe("parseArgv", () => {
       "two",
     ]);
     assert.equal(parsed.command, "add");
-    assert.equal(parsed.locate.repo, "/tmp/skills");
+    assert.equal(parsed.locate.repo, "/tmp/kstack");
     assert.deepEqual(parsed.rest, ["owner/repo"]);
     assert.deepEqual(parsed.flags.get("scope"), ["global"]);
     assert.deepEqual(parsed.flags.get("skill"), ["one", "two"]);
