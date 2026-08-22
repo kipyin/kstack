@@ -1,6 +1,6 @@
 # skills
 
-Private Cursor skills for Kip Yin.
+Cursor skills for Kip Yin. This is the Origin skills repo (`https://origin.cursor.com/kipyin/skills.git`).
 
 Official Matt Pocock skills are **not** stored here. They are installed at runtime with:
 
@@ -26,7 +26,12 @@ install.sh
 
 ## Install
 
-Clone this private repo (for example to `/tmp/skills`), then run `install.sh`.
+Clone with Origin, then run `install.sh`:
+
+```
+origin repo clone kipyin/skills /tmp/skills
+bash /tmp/skills/install.sh
+```
 
 `install.sh` always:
 
@@ -49,4 +54,4 @@ bash /tmp/skills/install.sh lightmind
 
 Unknown project names fail. Do not add Lighthouse or Lightmind skills to `global/`.
 
-**Do not make this repo public.**
+Cloud Agent environments: see [SETUP.md](SETUP.md).
