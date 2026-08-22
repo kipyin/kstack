@@ -10,6 +10,8 @@ There are two ways to use this repo: manage local skills, and install them on a 
 | Checkout | `~/Code/kstack` | clone to `/tmp/kstack` ([SETUP.md](SETUP.md)) |
 | Install | `kstack link` (symlink) | `./install.sh [global\|lighthouse\|lightmind]` (copy) |
 
+This repo's own Cloud env: `bash .cursor/install.sh` (workspace already is the checkout; no second clone).
+
 `install.sh` never fetches. Refresh pinned third-party skills with `kstack sync` / `update` / `add` on a machine that can reach the sources.
 
 ## Use `kstack` on Mac

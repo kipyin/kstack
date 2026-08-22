@@ -2,7 +2,7 @@
 
 Wire a new app repo's Cloud Agent environment to this Origin repo. Skills stay here; the environment clones and copies them.
 
-Mac checkouts use [README.md](README.md) (`kstack link`). This page is the Cloud copy path.
+Mac checkouts use [README.md](README.md) (`kstack link`). This page is the Cloud copy path. For Cloud Agents working **on this repo**, skip the clone block and use [This repo's own Cloud Agent environment](#this-repos-own-cloud-agent-environment).
 
 ## 1. Source
 
@@ -57,3 +57,13 @@ Merge to the environment's build branch. Run a non-draft rebuild.
 Run one Cloud Agent and list `~/.cursor/skills`. Cross-check lock-owned names against [lock.json](lock.json). Missing lock-owned folders means pins were not materialized in this repo before the clone — refresh from the Mac checkout ([README.md](README.md)) and push.
 
 **Done when:** `~/.cursor/skills` has the first-party globals, the selected project's folders, and every lock-owned name in `lock.json`.
+
+## This repo's own Cloud Agent environment
+
+When a Cloud Agent works **on kipyin/kstack itself**, the workspace already is this checkout. Do not clone to `/tmp/kstack` and do not set `CURSOR_API_KEY` for skills.
+
+- **Install script:** `bash .cursor/install.sh`
+- That script runs `npm ci` and `npm run build` in `packages/kstack` so the CLI is on the VM, then `install.sh global` from the workspace (no `/tmp` clone).
+- Mac humans still use [README.md](README.md) (`kstack link`).
+
+App repos keep using the clone block in section 2 (`CURSOR_API_KEY` + `origin repo clone` to `/tmp/kstack`).
