@@ -9,3 +9,7 @@ npm ci
 npm run build
 cd "$ROOT"
 bash "$ROOT/install.sh" global
+# Kip GitHub noreply author + strip Cursor Co-authored-by trailers.
+# Re-run .cursor/hooks/install-identity.sh after session start if Cursor
+# replants ~/.cursor/agent-hooks or resets user.name / user.email.
+bash "$ROOT/.cursor/hooks/install-identity.sh"
