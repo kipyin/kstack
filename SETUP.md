@@ -14,9 +14,11 @@ Lock-owned inventory: [lock.json](lock.json).
 
 **Done when:** the Origin URL, project name, and allowlist entry are decided.
 
-## 2. App repo `.cursor/install.sh`
+## 2. App repo `.cursor` scripts
 
-After product setup (for example `npm ci`), append this block. Replace `<project>` with the allowlisted name.
+After product setup (for example `npm ci`), append this block to `.cursor/install.sh`. Replace `<project>` with the allowlisted name.
+
+Origin-primary Cloud envs inject `url.*.insteadOf` for `origin.cursor.com`; clone then 403s because helpers never run. Unset those keys first. GitHub-primary envs have no matching keys — the loop is a no-op.
 
 ```bash
 rm -rf /tmp/kstack
@@ -25,6 +27,9 @@ export PATH="/exec-daemon/tools:${HOME}/.local/bin:${PATH}"
 if ! command -v origin >/dev/null 2>&1; then
   curl -fsSL https://downloads.cursor.com/origin/install.sh | sh
 fi
+while IFS= read -r key; do
+  git config --global --unset-all "$key" || true
+done < <(git config --global --name-only --get-regexp '^url\..*origin\.cursor\.com' || true)
 if ! origin auth login --api-key "$CURSOR_API_KEY"; then
   echo "origin auth login failed." >&2
   exit 1
@@ -36,15 +41,27 @@ fi
 bash /tmp/kstack/install.sh <project>
 ```
 
-**Done when:** the app's `.cursor/install.sh` clones `kipyin/kstack` to `/tmp/kstack` and runs `install.sh <project>`.
+**Done when:** the app's `.cursor/install.sh` unsets Origin `insteadOf`, clones `kipyin/kstack` to `/tmp/kstack`, and runs `install.sh <project>`.
+
+### `.cursor/start.sh`
+
+Session start reinjects those keys. Repeat the unset loop so mid-session sibling Origin clones still use the CLI helpers.
+
+```bash
+while IFS= read -r key; do
+  git config --global --unset-all "$key" || true
+done < <(git config --global --name-only --get-regexp '^url\..*origin\.cursor\.com' || true)
+```
+
+**Done when:** the app's `.cursor/start.sh` unsets Origin `insteadOf` on each session start.
 
 ## 3. Cloud env
 
 - **Install script:** `bash .cursor/install.sh`
-- **Start:** as the app needs
+- **Start:** `bash .cursor/start.sh` (same Origin `insteadOf` unset; plus whatever the app needs)
 - **Secret `CURSOR_API_KEY`:** Environment scope, Runtime Secret (not Personal / My Secrets — those are unavailable during Builds). Value is the Cursor User API key from cursor.com/dashboard/api.
 
-**Done when:** the environment runs that install script and `CURSOR_API_KEY` is an Environment Runtime Secret.
+**Done when:** the environment runs that install script and start script, and `CURSOR_API_KEY` is an Environment Runtime Secret.
 
 ## 4. Prove
 
@@ -68,4 +85,4 @@ When a Cloud Agent works **on kipyin/kstack itself**, the workspace already is t
 - That install script runs `npm ci` and `npm run build` in `packages/kstack` so the CLI is on the VM, then `install.sh global` from the workspace (no `/tmp` clone).
 - Mac humans still use [README.md](README.md) (`kstack link`).
 
-App repos keep using the clone block in section 2 (`CURSOR_API_KEY` + `origin repo clone` to `/tmp/kstack`).
+App repos keep using section 2: clone at install, unset `insteadOf` again at session start.
