@@ -45,7 +45,9 @@ bash /tmp/kstack/install.sh <project>
 
 ### `.cursor/start.sh`
 
-Session start reinjects those keys. Repeat the unset loop so mid-session sibling Origin clones still use the CLI helpers.
+Same unset loop is best-effort. Cloud Agent session bootstrap may reinject those keys after `start.sh` exits, so this does not keep `insteadOf` clear for the whole session. The install-time unset is what matters (skills baked into the snapshot).
+
+For a mid-session sibling Origin clone, unset those keys (or use a clean `GIT_CONFIG_GLOBAL`) immediately before `origin repo clone`.
 
 ```bash
 while IFS= read -r key; do
@@ -53,12 +55,12 @@ while IFS= read -r key; do
 done < <(git config --global --name-only --get-regexp '^url\..*origin\.cursor\.com' || true)
 ```
 
-**Done when:** the app's `.cursor/start.sh` unsets Origin `insteadOf` on each session start.
+**Done when:** the app's `.cursor/start.sh` includes the Origin `insteadOf` unset (best-effort).
 
 ## 3. Cloud env
 
 - **Install script:** `bash .cursor/install.sh`
-- **Start:** `bash .cursor/start.sh` (same Origin `insteadOf` unset; plus whatever the app needs)
+- **Start:** `bash .cursor/start.sh` (best-effort Origin `insteadOf` unset; plus whatever the app needs)
 - **Secret `CURSOR_API_KEY`:** Environment scope, Runtime Secret (not Personal / My Secrets — those are unavailable during Builds). Value is the Cursor User API key from cursor.com/dashboard/api.
 
 **Done when:** the environment runs that install script and start script, and `CURSOR_API_KEY` is an Environment Runtime Secret.
@@ -85,4 +87,4 @@ When a Cloud Agent works **on kipyin/kstack itself**, the workspace already is t
 - That install script runs `npm ci` and `npm run build` in `packages/kstack` so the CLI is on the VM, then `install.sh global` from the workspace (no `/tmp` clone).
 - Mac humans still use [README.md](README.md) (`kstack link`).
 
-App repos keep using section 2: clone at install, unset `insteadOf` again at session start.
+App repos keep using section 2: unset `insteadOf` then clone at install (start.sh unset is best-effort).
