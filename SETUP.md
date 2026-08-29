@@ -1,90 +1,89 @@
-# Cloud Agent skills
+# Cloud copy path
 
-Wire a new app repo's Cloud Agent environment to this Origin repo. Skills stay here; the environment clones and copies them.
+[README.md](README.md) has both the Mac and Cloud paths. This page is the Cloud copy deep page.
 
-Mac checkouts use [README.md](README.md) (`kstack link`). This page is the Cloud copy path. For Cloud Agents working **on this repo**, skip the clone block and use [This repo's own Cloud Agent environment](#this-repos-own-cloud-agent-environment).
+Mac checkouts use [README.md](README.md) (`kstack link`). Cloud Agents working on this repo skip the clone. Use [This repo's own Cloud Agent environment](#this-repos-own-cloud-agent-environment).
 
 ## 1. Source
 
-https://origin.cursor.com/kipyin/kstack.git
+Public install URL: https://github.com/kipyin/kstack
 
-`install.sh` copies `global/` then the selected project into `~/.cursor/skills`. Allowlist: `global`, `lighthouse`, `lightmind`. A new project name needs `<project>/` (even a `.gitkeep`) and an allowlist entry in `install.sh`.
+Origin (agent-managed source of truth): https://origin.cursor.com/kipyin/kstack.git
+
+Clone GitHub with ordinary git. No Cursor API key.
+
+[install.sh](install.sh) copies `global/` then the selected project into `~/.cursor/skills`. A new project name needs a folder (even a `.gitkeep`) and an allowlist entry in that file.
 
 Lock-owned inventory: [lock.json](lock.json).
 
-**Done when:** the Origin URL, project name, and allowlist entry are decided.
+**Done when.** The GitHub URL and project name are decided, and that name is in [install.sh](install.sh).
 
-## 2. App repo `.cursor` scripts
+## 2. App repo `.cursor/install.sh`
 
-After product setup (for example `npm ci`), append this block to `.cursor/install.sh`. Replace `<project>` with the allowlisted name.
+After product setup, clone GitHub kstack onto a path that survives the snapshot, then run [install.sh](install.sh). Point at that file rather than pasting it.
 
-Origin-primary Cloud envs inject `url.*.insteadOf` for `origin.cursor.com`; clone then 403s because helpers never run. Unset those keys first. GitHub-primary envs have no matching keys — the loop is a no-op.
-
-```bash
-rm -rf /tmp/kstack
-: "${CURSOR_API_KEY:?CURSOR_API_KEY secret missing; needed to clone Origin kipyin/kstack}"
-export PATH="/exec-daemon/tools:${HOME}/.local/bin:${PATH}"
-if ! command -v origin >/dev/null 2>&1; then
-  curl -fsSL https://downloads.cursor.com/origin/install.sh | sh
-fi
-while IFS= read -r key; do
-  git config --global --unset-all "$key" || true
-done < <(git config --global --name-only --get-regexp '^url\..*origin\.cursor\.com' || true)
-if ! origin auth login --api-key "$CURSOR_API_KEY"; then
-  echo "origin auth login failed." >&2
-  exit 1
-fi
-if ! origin repo clone kipyin/kstack /tmp/kstack; then
-  echo "origin repo clone of kipyin/kstack failed." >&2
-  exit 1
-fi
-bash /tmp/kstack/install.sh <project>
+```
+KSTACK_DIR="${HOME}/.cursor/kstack"
+rm -rf "$KSTACK_DIR"
+GIT_TERMINAL_PROMPT=0 git clone --depth 1 https://github.com/kipyin/kstack.git "$KSTACK_DIR"
+bash "$KSTACK_DIR/install.sh" <project>
 ```
 
-**Done when:** the app's `.cursor/install.sh` unsets Origin `insteadOf`, clones `kipyin/kstack` to `/tmp/kstack`, and runs `install.sh <project>`.
+`/tmp/kstack` is enough if you only need the skill copy baked at install. Session start needs the identity hook files, and those scripts locate `commit-msg` relative to the kstack root, so keep the checkout layout (`.../kstack/.cursor/hooks/...`).
 
-### `.cursor/start.sh`
+Origin-primary Cloud envs inject `url.*.insteadOf` for `origin.cursor.com`. GitHub clone does not need that. Unset those keys only if you still `origin repo clone` a sibling.
 
-Same unset loop is best-effort. Cloud Agent session bootstrap may reinject those keys after `start.sh` exits, so this does not keep `insteadOf` clear for the whole session. The install-time unset is what matters (skills baked into the snapshot).
+**Done when.** The app's `.cursor/install.sh` clones `https://github.com/kipyin/kstack.git` and runs `install.sh <project>`.
 
-For a mid-session sibling Origin clone, unset those keys (or use a clean `GIT_CONFIG_GLOBAL`) immediately before `origin repo clone`.
+## 3. App repo `.cursor/start.sh`
 
-```bash
-while IFS= read -r key; do
-  git config --global --unset-all "$key" || true
-done < <(git config --global --name-only --get-regexp '^url\..*origin\.cursor\.com' || true)
+Reapply identity from the durable checkout. Pattern: [`.cursor/start.sh`](.cursor/start.sh) (run the hook immediately, then the keeper).
+
+```
+bash "${HOME}/.cursor/kstack/.cursor/hooks/install-identity.sh"
 ```
 
-**Done when:** the app's `.cursor/start.sh` includes the Origin `insteadOf` unset (best-effort).
+[`.cursor/hooks/install-identity.sh`](.cursor/hooks/install-identity.sh) reads:
 
-## 3. Cloud env
+- `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL`. Both set becomes `user.name` / `user.email`. Either missing leaves Cursor's author.
+- `GIT_SIGNING_KEY`. OpenSSH PEM or base64 enables house SSH signing. Unset leaves `commit.gpgsign` false. Install and start still succeed.
 
-- **Install script:** `bash .cursor/install.sh`
-- **Start:** `bash .cursor/start.sh` (best-effort Origin `insteadOf` unset; plus whatever the app needs)
-- **Secret `CURSOR_API_KEY`:** Environment scope, Runtime Secret (not Personal / My Secrets — those are unavailable during Builds). Value is the Cursor User API key from cursor.com/dashboard/api.
+Product secrets stay in the app repo. Lightmind keeps `LIGHTMIND_*` there.
 
-**Done when:** the environment runs that install script and start script, and `CURSOR_API_KEY` is an Environment Runtime Secret.
+**Done when.** Session start runs that identity hook.
 
-## 4. Prove
+## 4. Cloud env
+
+- Install script: `bash .cursor/install.sh`
+- Start: `bash .cursor/start.sh`. Use an absolute path if the start step runs from `$HOME`.
+- Optional Runtime secrets: `GIT_AUTHOR_NAME`, `GIT_AUTHOR_EMAIL`, `GIT_SIGNING_KEY`
+- Product secrets on the app env, not in kstack
+
+**Done when.** The environment runs those scripts and has the identity secrets you want.
+
+## 5. Prove
 
 Merge to the environment's build branch. Run a non-draft rebuild.
 
-**Done when:** the install log shows Origin clone OK, `Installed skills (<project>)`, exit 0, and the snapshot is active.
+**Done when.**
 
-## 5. Optional smoke
+- Install log shows the GitHub clone and `Installed skills (<project>)`, exit 0.
+- Smoke commit author (`git log -1 --format='%an <%ae>'`) matches `GIT_AUTHOR_*` if set, else Cursor's default.
+- `git log -1 --format='%G?'` is `N` when `GIT_SIGNING_KEY` was unset. GitHub shows Verified only when the key was set.
 
-Run one Cloud Agent and list `~/.cursor/skills`. Cross-check lock-owned names against [lock.json](lock.json). Missing lock-owned folders means pins were not materialized in this repo before the clone — refresh from the Mac checkout ([README.md](README.md)) and push.
+## 6. Optional skills smoke
 
-**Done when:** `~/.cursor/skills` has the first-party globals, the selected project's folders, and every lock-owned name in `lock.json`.
+Run one Cloud Agent and list `~/.cursor/skills`. Cross-check lock-owned names against [lock.json](lock.json). Missing lock-owned folders means pins were not materialized in this repo before the clone. Refresh from the Mac checkout ([README.md](README.md)) and push.
+
+**Done when.** `~/.cursor/skills` has the first-party globals, the selected project's folders, and every lock-owned name in `lock.json`.
 
 ## This repo's own Cloud Agent environment
 
-When a Cloud Agent works **on kipyin/kstack itself**, the workspace already is this checkout. Do not clone to `/tmp/kstack` and do not set `CURSOR_API_KEY` for skills.
+When a Cloud Agent works on kipyin/kstack itself, the workspace already is this checkout. Skip the GitHub clone.
 
-- **Install script:** `bash /workspace/.cursor/install.sh` (build-time: CLI, `install.sh global`, and identity)
-- **Start script:** `bash /workspace/.cursor/start.sh` (session-time identity: install house `commit-msg` immediately, then keep re-applying after Cursor plants `~/.cursor/agent-hooks` or resets `core.hooksPath` / git user)
-- Use absolute `/workspace/...` paths, not relative `.cursor/...`. The per-boot **start** step runs from `$HOME`, not the workspace root, so a relative `bash .cursor/start.sh` exits 127 and identity + strip hook never get re-applied.
-- That install script runs `npm ci` and `npm run build` in `packages/kstack` so the CLI is on the VM, then `install.sh global` from the workspace (no `/tmp` clone).
-- Mac humans still use [README.md](README.md) (`kstack link`).
+- Install script: `bash /workspace/.cursor/install.sh` (build-time: CLI, `install.sh global`, and identity)
+- Start script: `bash /workspace/.cursor/start.sh` (session-time identity: install house `commit-msg` immediately, then keep re-applying after Cursor plants `~/.cursor/agent-hooks` or resets `core.hooksPath` / git user)
+- Use absolute `/workspace/...` paths, not relative `.cursor/...`. The per-boot start step runs from `$HOME`, not the workspace root, so a relative `bash .cursor/start.sh` exits 127 and identity never gets re-applied.
+- That install script runs `npm ci` and `npm run build` in `packages/kstack` so the CLI is on the VM, then `install.sh global` from the workspace.
 
-App repos keep using section 2: unset `insteadOf` then clone at install (start.sh unset is best-effort).
+Mac humans still use [README.md](README.md) (`kstack link`).
