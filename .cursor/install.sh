@@ -9,6 +9,6 @@ npm ci
 npm run build
 cd "$ROOT"
 bash "$ROOT/install.sh" global
-# Kip GitHub noreply author + house commit-msg (always strip attribution).
+# Optional git author/signing from env + house commit-msg (always strip).
 # Session start re-applies via .cursor/start.sh (install + keeper).
 bash "$ROOT/.cursor/hooks/install-identity.sh"

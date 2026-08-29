@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cloud Agent session start for kipyin/kstack.
-# Apply Kip identity + house commit-msg immediately, then keep re-applying.
+# Apply optional git identity + house commit-msg immediately, then keep re-applying.
 # Cursor can plant ~/.cursor/agent-hooks and reset hooksPath / git user after
 # this script returns; a 30s wait-and-copy-once is not enough.
 set -euo pipefail

@@ -83,7 +83,7 @@ When a Cloud Agent works **on kipyin/kstack itself**, the workspace already is t
 
 - **Install script:** `bash /workspace/.cursor/install.sh` (build-time: CLI, `install.sh global`, and identity)
 - **Start script:** `bash /workspace/.cursor/start.sh` (session-time identity: install house `commit-msg` immediately, then keep re-applying after Cursor plants `~/.cursor/agent-hooks` or resets `core.hooksPath` / git user)
-- Use absolute `/workspace/...` paths, not relative `.cursor/...`. The per-boot **start** step runs from `$HOME`, not the workspace root, so a relative `bash .cursor/start.sh` exits 127 and the Kip identity + strip hook never get re-applied.
+- Use absolute `/workspace/...` paths, not relative `.cursor/...`. The per-boot **start** step runs from `$HOME`, not the workspace root, so a relative `bash .cursor/start.sh` exits 127 and identity + strip hook never get re-applied.
 - That install script runs `npm ci` and `npm run build` in `packages/kstack` so the CLI is on the VM, then `install.sh global` from the workspace (no `/tmp` clone).
 - Mac humans still use [README.md](README.md) (`kstack link`).
 

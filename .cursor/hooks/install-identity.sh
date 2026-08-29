@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Re-runnable: Kip GitHub noreply author + house commit-msg that always strips.
+# Re-runnable: optional git author/signing + house commit-msg that always strips.
 # Idempotent. Safe after Cursor plants or resets ~/.cursor/agent-hooks / hooksPath.
 set -euo pipefail
 
@@ -17,8 +17,33 @@ if [[ ! -f "$STRIP_SRC" ]]; then
   exit 1
 fi
 
-git config --global user.name Kip
-git config --global user.email 28321392+kipyin@users.noreply.github.com
+if [[ -n "${GIT_AUTHOR_NAME:-}" && -n "${GIT_AUTHOR_EMAIL:-}" ]]; then
+  git config --global user.name "$GIT_AUTHOR_NAME"
+  git config --global user.email "$GIT_AUTHOR_EMAIL"
+fi
+
+# Never use ~/.cursor/bin/cursor-git-ssh-keygen (GitHub unknown_key / Unverified).
+git config --global --unset-all gpg.ssh.program || true
+if [[ -n "${GIT_SIGNING_KEY:-}" ]]; then
+  mkdir -p "${HOME}/.ssh"
+  KEY_FILE="${HOME}/.ssh/cloud-signing"
+  if [[ "$GIT_SIGNING_KEY" == *"BEGIN OPENSSH PRIVATE KEY"* ]]; then
+    printf '%s\n' "$GIT_SIGNING_KEY" > "$KEY_FILE"
+  else
+    printf '%s' "$GIT_SIGNING_KEY" | base64 -d > "$KEY_FILE"
+  fi
+  chmod 600 "$KEY_FILE"
+  ssh-keygen -y -f "$KEY_FILE" > "${KEY_FILE}.pub"
+  git config --global gpg.format ssh
+  git config --global user.signingkey "${KEY_FILE}.pub"
+  git config --global commit.gpgsign true
+  git config --global tag.gpgsign true
+else
+  git config --global commit.gpgsign false
+  git config --global tag.gpgsign false
+  git config --global --unset-all user.signingkey || true
+  git config --global --unset-all gpg.format || true
+fi
 
 install_file() {
   local src="$1" dest="$2"
