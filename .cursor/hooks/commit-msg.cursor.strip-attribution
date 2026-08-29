@@ -1,10 +1,10 @@
 #!/bin/bash
-# Runs after commit-msg.cursor.co-author via lexical glob on commit-msg.cursor*.
-# The dispatcher executes $HOOKS_DIR/$HOOK_NAME.cursor* in bash glob order:
+# Strip Cursor/agent attribution trailers from a commit-msg file.
+# Called last by the house commit-msg dispatcher. Also a glob fallback:
+# if Cursor's dispatcher is still the commit-msg hook, lexical glob order is
 #   commit-msg.cursor
 #   commit-msg.cursor.co-author
 #   commit-msg.cursor.strip-attribution
-# Strips Cursor/agent attribution trailers the co-author hook just appended.
 set -euo pipefail
 
 MSG_FILE="${1:-}"
@@ -26,8 +26,8 @@ mkdir -p "$(dirname "$LOG")"
 } >> "$LOG"
 
 TMP="$(mktemp)"
-# Drop lines matching attribution tokens (case-insensitive).
-grep -viE 'co-authored-by|made-with|made with|generated with|cursoragent' "$MSG_FILE" > "$TMP" || true
+# Trailer lines only. A subject that mentions Co-authored-by must survive.
+grep -viE '^[[:space:]]*(co-authored-by:|made-with:|made with |generated with |generated-by:)' "$MSG_FILE" > "$TMP" || true
 
 # Trim trailing blank lines left by the co-author hook's padding.
 # Keep a single trailing newline (POSIX text file).

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# @kstack-identity
+# House git hook dispatcher. Git invokes this as commit-msg / pre-commit / etc.
+# Chain Cursor's *.cursor* hooks, then always strip attribution on commit-msg.
+set -euo pipefail
+
+HOOK_NAME="$(basename "$0")"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+
+run_cursor_dir() {
+  local dir="$1"
+  shift
+  local orig orig_hook hook
+  if [[ -f "$dir/.cursor-original-hooks-path" ]]; then
+    orig="$(tr -d '\n' < "$dir/.cursor-original-hooks-path")"
+    orig_hook="${orig}/${HOOK_NAME}"
+    if [[ -n "$orig" && -x "$orig_hook" ]]; then
+      "$orig_hook" "$@"
+    fi
+  fi
+  shopt -s nullglob
+  for hook in "$dir"/$HOOK_NAME.cursor*; do
+    [[ -x "$hook" ]] || continue
+    case "$(basename "$hook")" in
+      *.cursor.strip-attribution) continue ;;
+    esac
+    "$hook" "$@"
+  done
+}
+
+SEEN=""
+consider() {
+  local dest="$1"
+  shift
+  [[ -d "$dest" ]] || return 0
+  local norm
+  norm="$(cd "$dest" && pwd)"
+  case " $SEEN " in
+    *" $norm "*) return 0 ;;
+  esac
+  SEEN="${SEEN} ${norm}"
+  run_cursor_dir "$norm" "$@"
+}
+
+consider "$HERE" "$@"
+shopt -s nullglob
+for d in "${HOME}/.cursor/agent-hooks/"*/; do
+  consider "$d" "$@"
+done
+
+if [[ "$HOOK_NAME" != commit-msg ]]; then
+  exit 0
+fi
+
+MSG_FILE="${1:-}"
+STRIP=""
+if [[ -x "$HERE/commit-msg.cursor.strip-attribution" ]]; then
+  STRIP="$HERE/commit-msg.cursor.strip-attribution"
+elif [[ -x "${HOME}/.cursor/identity-hooks/commit-msg.cursor.strip-attribution" ]]; then
+  STRIP="${HOME}/.cursor/identity-hooks/commit-msg.cursor.strip-attribution"
+fi
+if [[ -n "$STRIP" ]]; then
+  "$STRIP" "$MSG_FILE"
+  exit 0
+fi
+
+# Last-resort inline strip if the sibling script is missing.
+if [[ -z "$MSG_FILE" || ! -f "$MSG_FILE" ]]; then
+  exit 0
+fi
+TMP="$(mktemp)"
+grep -viE '^[[:space:]]*(co-authored-by:|made-with:|made with |generated with |generated-by:)' "$MSG_FILE" > "$TMP" || true
+awk '
+  { lines[n++] = $0 }
+  END {
+    while (n > 0 && lines[n - 1] == "") n--
+    for (i = 0; i < n; i++) print lines[i]
+  }
+' "$TMP" > "$MSG_FILE"
+rm -f "$TMP"
+exit 0
