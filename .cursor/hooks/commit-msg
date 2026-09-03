@@ -6,6 +6,39 @@ set -euo pipefail
 
 HOOK_NAME="$(basename "$0")"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+HOUSE="${HOME}/.cursor/identity-hooks"
+# Inherit from a parent copy of this script. Never reset — that reopens the loop
+# when Cursor's agent-hooks dir points .cursor-original-hooks-path at HOUSE.
+export SEEN="${SEEN:-}"
+
+is_kstack_dispatcher() {
+  local hook="$1"
+  [[ -e "$hook" ]] || return 1
+  grep -q '@kstack-identity' "$hook" 2>/dev/null
+}
+
+should_skip_orig() {
+  local orig="$1"
+  local orig_hook="$2"
+  local orig_norm=""
+  if [[ -n "$orig" && -d "$orig" ]]; then
+    orig_norm="$(cd "$orig" && pwd)"
+  fi
+
+  if [[ -n "$orig_norm" ]]; then
+    case " $SEEN " in
+      *" $orig_norm "*) return 0 ;;
+    esac
+    if [[ "$orig_norm" == "$HERE" || "$orig_norm" == "$HOUSE" ]]; then
+      return 0
+    fi
+  fi
+
+  if is_kstack_dispatcher "$orig_hook"; then
+    return 0
+  fi
+  return 1
+}
 
 run_cursor_dir() {
   local dir="$1"
@@ -14,7 +47,7 @@ run_cursor_dir() {
   if [[ -f "$dir/.cursor-original-hooks-path" ]]; then
     orig="$(tr -d '\n' < "$dir/.cursor-original-hooks-path")"
     orig_hook="${orig}/${HOOK_NAME}"
-    if [[ -n "$orig" && -x "$orig_hook" ]]; then
+    if [[ -n "$orig" && -x "$orig_hook" ]] && ! should_skip_orig "$orig" "$orig_hook"; then
       "$orig_hook" "$@"
     fi
   fi
@@ -28,7 +61,6 @@ run_cursor_dir() {
   done
 }
 
-SEEN=""
 consider() {
   local dest="$1"
   shift
@@ -39,6 +71,7 @@ consider() {
     *" $norm "*) return 0 ;;
   esac
   SEEN="${SEEN} ${norm}"
+  export SEEN
   run_cursor_dir "$norm" "$@"
 }
 
