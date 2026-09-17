@@ -11,17 +11,17 @@ WORKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ $# -gt 1 ]]; then
   echo "error: unexpected extra arguments: ${*:2}" >&2
-  echo "usage: $0 [global|lighthouse|lightmind]" >&2
+  echo "usage: $0 [global|lighthouse|lightmind|eloquent]" >&2
   exit 1
 fi
 
 PROJECT="${1:-global}"
 
 case "$PROJECT" in
-  global|lighthouse|lightmind) ;;
+  global|lighthouse|lightmind|eloquent) ;;
   *)
     echo "error: unknown project '${PROJECT}'." >&2
-    echo "Expected: global, lighthouse, or lightmind (omit for global only)." >&2
+    echo "Expected: global, lighthouse, lightmind, or eloquent (omit for global only)." >&2
     exit 1
     ;;
 esac
