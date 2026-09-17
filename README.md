@@ -61,7 +61,7 @@ Wire an app's Cloud Agent environment so it copies skills and reapplies identity
 
 [`.cursor/hooks/install-identity.sh`](.cursor/hooks/install-identity.sh) is the identity contract. [`.cursor/start.sh`](.cursor/start.sh) is the reapply pattern.
 
-1. In the app's `.cursor/install.sh`, after product setup, clone GitHub kstack and copy skills. Replace `<project>` with a name [install.sh](install.sh) accepts: `global`, `lighthouse`, or `lightmind`.
+1. In the app's `.cursor/install.sh`, after product setup, clone GitHub kstack and copy skills. Replace `<project>` with a name [install.sh](install.sh) accepts: `global`, `lighthouse`, `lightmind`, or `eloquent`.
 
 ```
 KSTACK_DIR="${HOME}/.cursor/kstack"
