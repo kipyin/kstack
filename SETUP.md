@@ -6,11 +6,9 @@ Mac checkouts use [README.md](README.md) (`kstack link`). Cloud Agents working o
 
 ## 1. Source
 
-Public install URL: https://github.com/kipyin/kstack
+GitHub is the write and install source of truth: https://github.com/kipyin/kstack
 
-Origin (agent-managed source of truth): https://origin.cursor.com/kipyin/kstack.git
-
-Clone GitHub with ordinary git. No Cursor API key.
+Clone with ordinary git. No Cursor API key.
 
 [install.sh](install.sh) copies `global/` then the selected project into `~/.cursor/skills`. A new project name needs a folder (even a `.gitkeep`) and an allowlist entry in that file.
 
@@ -31,7 +29,7 @@ bash "$KSTACK_DIR/install.sh" <project>
 
 `/tmp/kstack` is enough if you only need the skill copy baked at install. Session start needs the identity hook files, and those scripts locate `commit-msg` relative to the kstack root, so keep the checkout layout (`.../kstack/.cursor/hooks/...`).
 
-Origin-primary Cloud envs inject `url.*.insteadOf` for `origin.cursor.com`. GitHub clone does not need that. Unset those keys only if you still `origin repo clone` a sibling.
+Older Cloud envs may still rewrite `origin.cursor.com` with `url.*.insteadOf`. The GitHub kstack clone does not use that rewrite. Unset those keys only if a sibling checkout still uses `origin repo clone`.
 
 **Done when.** The app's `.cursor/install.sh` clones `https://github.com/kipyin/kstack.git` and runs `install.sh <project>`.
 
