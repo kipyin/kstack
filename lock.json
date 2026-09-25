@@ -70,7 +70,8 @@
         "wizard",
         "writing-for-agents",
         "implement-spec",
-        "pr"
+        "pr",
+        "retro"
       ],
       "hashes": {
         "ask-matt": "b25d86fb36b1d294eeead5d7db529f86135f9671f2afcd607579a63bb2213769",
@@ -99,9 +100,10 @@
         "wizard": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
         "writing-for-agents": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
         "implement-spec": "f703b5f41df9c2202e19540d203e0d5fc32613572a838a070136cc22e712b129",
-        "pr": "e91dc57fa0ee1d8d2fd35562425c943d377f0acdfba6245858a619990fcff0e8"
+        "pr": "e91dc57fa0ee1d8d2fd35562425c943d377f0acdfba6245858a619990fcff0e8",
+        "retro": "33fbc28568e3146f20fd908b12998bc0ab30aa4f4c87288199a40793efa94696"
       },
-      "fetchedAt": "2026-09-25T14:00:31.683Z"
+      "fetchedAt": "2026-09-25T15:37:42.797Z"
     },
     "modem-dev/hunk": {
       "source": "modem-dev/hunk",
