@@ -2,11 +2,9 @@
 
 Skills plus portable git identity for Cursor agents.
 
-Origin is the agent-managed source of truth: https://origin.cursor.com/kipyin/kstack.git
+GitHub is the source of truth for writes and installs: https://github.com/kipyin/kstack
 
-Public install URL: https://github.com/kipyin/kstack
-
-Clone GitHub with ordinary git. No Cursor API key.
+Clone with ordinary git. No Cursor API key.
 
 Two ways in: symlink on a Mac, copy on a Cloud Agent environment.
 
@@ -22,13 +20,7 @@ This repo's own Cloud env skips the clone. The workspace already is the checkout
 
 ## Local (Mac)
 
-1. Clone to `~/Code/kstack`. Origin if you have it, otherwise GitHub.
-
-```
-origin repo clone kipyin/kstack ~/Code/kstack
-```
-
-or
+1. Clone to `~/Code/kstack`.
 
 ```
 git clone https://github.com/kipyin/kstack.git ~/Code/kstack
