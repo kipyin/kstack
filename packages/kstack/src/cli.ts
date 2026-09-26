@@ -24,7 +24,7 @@ Commands:
                              Fetch once, write into a tier, add/update lock entries
 
 Mac: clone to ~/Code/kstack, then \`kstack link\`.
-Cloud VMs: run ./install.sh [global|lighthouse|lightmind|eloquent] 
+Cloud VMs: run ./install.sh [global|lighthouse|lightmind|eloquent|pwc-graphic-elements] 
 
 Overrides: --repo, --config, KSTACK_REPO, KSTACK_CONFIG.
 `;
