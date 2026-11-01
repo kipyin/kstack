@@ -13,7 +13,7 @@ description: >-
 
 | label | 谁写 | 含义 |
 |---|---|---|
-| `needs-triage` | owner 伙伴 | 刚立项，等 triage |
+| `needs-triage` | owner bot | 刚立项，等 triage |
 | `ready-for-agent` | triage 通过方 | **唯一放行闸**：可以派工了 |
 | `blocked` | 谁发现谁写 | 需要 Kip 决定，不能自己往下走 |
 
@@ -31,7 +31,7 @@ description: >-
 | 待合并 | PR 已被 approve |
 | 已完成 | issue 关闭（不再出现在列表里） |
 
-`in-progress` **保留但不当作状态**：它是派工前的**互斥锁**，防止两轮心跳重复派工。写完就不管，没人靠它读状态。
+`in-progress` **保留但不当作状态**：它是派工前的**互斥锁**，防止 Gabe 两轮轮询重复派工。写完就不管，没人靠它读状态。
 
 ## 完整流转
 
@@ -50,35 +50,44 @@ description: >-
 
 ## Grilling（S2）到底怎么做
 
-**开一场 grilling session = 开一个后台任务，让它在里面当 Griller，Kip 进去逐题回答。**
+**开一场 grilling = 开一个 Lody session（`--agent-role Sous Chef`，配额不够用 Backup Chef），Kip 进那个 session 逐题回答。** CLI 细节见 `use-lody`。
 
 ### 机制
 
-1. **owner 伙伴开一个 `start_session_task`**，任务是「当 Griller」：一轮只问一题，问完**结束本轮**（不要自问自答、不要自己猜答案）
-2. **Kip 在那个任务里回答**，任务收到回答后再问下一题
-3. 每条拍定的结论**立即写回 issue comment**（决定 + 理由 + 日期），不要攒着
-4. 到「可以 fold 出 spec 和 tickets」就收，并把结论汇总回 issue，close 掉任务
+1. **Gabe triage 后开 Lody grilling session**（或 owner 按 handoff 接到已开好的链接）：
+   ```
+   blody session create --workspace kipyin \
+     --agent-role Sous Chef \
+     --title '<repo>#<n> grill' \
+     --prompt-file grill.md --json
+   ```
+   角色本身就是 Griller：一轮只问一题，问完**结束本轮**（不要自问自答、不要自己猜答案）。不要手选 model / machine / agent-config——role 定死。
+2. **Kip 在那个 Lody session 里回答**（https://lody.ai/kipyin/sessions/<id>）。下一题等他答完再问。
+3. 每条拍定的结论**立即写回 issue comment**（决定 + 理由 + 日期），不要攒着。
+4. 到「可以 fold 出 spec 和 tickets」就收，并把结论汇总回 issue；session 用完后 `blody session cancel`（或按 `use-lody` 归档纪律处理），不要留空转。
 
-为什么必须是后台任务：**Kip 要能进去对话**。`subagent` 不能（他无法与子代理对话），所以 grilling 只能用 `start_session_task`。
+为什么必须是 Lody session：**Kip 要能进去对话**。Grok Bot 侧的子代理 / executor 他进不去，所以 grilling 只能用 Lody session。
 
 ### 任务的 instruction 必含
+
+`grill.md` 只放票面事实（见 `use-lody` allowlist），并写清：
 
 ```
 你是这场 grilling 的 Griller。目标：<票 + 要定的事>
 - 一轮只问一题，问完就结束本轮，等 Kip 回答
-- 每题给：问题 + 选项的实际后果 + 你的推荐（带依据：issue / 代码 / ADR / 早先决定）
+- 每题给：问题 + 选项（选项要能直接选）；不要单独堆「白话 / 后果 / 推荐」模板
 - Kip 答完再问下一题；上一题的答案可能让后面的问题作废，据此调整
-- 每得到一条结论，立即 gh-as <bot> issue comment 写回 <票号>
+- 每得到一条结论，立即以正确 bot 身份 issue comment 写回 <票号>
 - 不代选、不批量列问题、不自己编答案
 - 不要改 label、不开 PR、不 push
 ```
 
 ### 错误形式（真实发生过）
 
-- ❌ 派一个任务去「生成 grill 草稿」，列 10 个问题让 Kip 填空（**那是问卷，不是 grill**）
+- ❌ 派一个 session 去「生成 grill 草稿」，列 10 个问题让 Kip 填空（**那是问卷，不是 grill**）
 - ❌ 一次抛 10 题
 - ❌ 自己替 Kip 代选，然后说「其余按默认」
-- ❌ 在任务里自问自答，Kip 根本没参与
+- ❌ 在 session 里自问自答，Kip 根本没参与
 
 区别：grill 里**答案会改变问题**——第 2 题的答案可能让第 5 题作废。问卷发现不了这件事，它只是把 10 个问题摆在那。
 
@@ -88,62 +97,61 @@ Kip 明确说「给我一份问卷」「列成清单我自己填」时才产草�
 
 ### Griller 的模型
 
-**固定 gpt-6.1-sol @ high**（route：`harness=codex`、`provider_id=openai`、`model=gpt-6.1-sol`、`effort=high`）。
+**由 `--agent-role` 决定，禁止手选 model。** Sous Chef 不够用（session limit / 配额）就换 **Backup Chef** 继续，步骤见 `use-lody`「When Claude usage runs out」。不要 Kimi，不要裸 session。
 
-`start_session_task` 没有 model 参数，所以分三步做，别指望建的时候就能指定：
-
-1. **建任务**，instruction 末尾加一句：「先读完票、skill 和相关代码，输出『已就绪』并**结束本轮，不要提问**」
-2. **切模型**：`get_session_runtime(session_id=<任务 id>)` 拿 `generation`，再
-   `set_session_runtime({session_id, harness:"codex", provider_id:"openai", model:"gpt-6.1-sol", effort:"high", expected_generation})`
-3. **放行**：`message_session_task({task_id, message:"模型已切到 gpt-6.1-sol high，现在问第一题"})`
-
-不做第 1 步的直接后果：第一题会是默认模型问的，而 grilling 最贵的恰恰是第一题——它决定后面所有问题的方向。
-
-### 伙伴不传话
+### 不传话
 
 **任何环节都不做人类与执行者之间的中继。**
 
-- Kip 直接进 grilling 任务回答，伙伴不做「把问题转给 Kip、再把答案带回去」的中继
-- Kip 也可以直接进实现任务看进度、提要求、插话——不需要伙伴转达
-- 伙伴在这一层的职责只有三件：**开局**（建任务、给足上下文）、**收口**（把结论写回 issue）、**验收**（S6）
+- Kip 直接进 grilling session 回答；bot 不做「把问题转给 Kip、再把答案带回去」
+- Kip 也可以直接进实现 session 看进度、提要求、插话——不需要 bot 转达
+- bot 在这一层的职责只有三件：**开局**（`blody session create`、给足票面事实）、**收口**（把结论写回 issue）、**验收**（S6）
 - 需要同步状态时，写进 issue / skill，不要用消息转述
 
-反例：把 Grill 的 10 个问题抄进消息发给 Kip、再把他的答案复制回任务。这样做既慢，又会在复制中丢上下文。
+反例：把 Grill 的 10 个问题抄进 Grok Bot 聊天发给 Kip、再把他的答案 `blody session chat` 回 session。既慢，又会在复制中丢上下文。
 
 ### 谁当 Griller
 
-- **owner 伙伴自己开任务当 Griller**，不需要另一个 bot 来主持（Sous Chef 那个角色已取消）
-- 要并行查资料可以用 `subagent(agent:"scout")`，但**问人的那一环必须在 Kip 能进入的任务里**
+- **Lody `Sous Chef`（不够用 → `Backup Chef`）** 主持提问；Kip 进同一 session 回答
+- 要并行查资料：另开 Lody `Explorer`（或短会话），但**问人的那一环必须在 Kip 能打开的 grilling session 里**
 
-## 派工机制（四选一，按活的性质）
-## 派工机制（四选一，按活的性质）
+## 派工机制（按活的性质选 Lody role）
 
 | 用在哪 | 用什么 | 说明 |
 |---|---|---|
-| **实现一张票 / 一份 spec** | `start_session_task` | 长跑、要独立 worktree、要产 PR。带 `working_dir` + `use_worktree=true` + `timeout_ms` |
-| **写 PR body、查资料、画效果图** | `subagent` | 一次性，一次一句话。查资料用 `agent:"scout"`，写文用 worker |
-| **需要特定模型的一次性任务**（如 opus 追问、gpt 决策地图） | `subagent(model=..., async=true)` | **只有 subagent 能指定模型**；`start_session_task` 用伙伴的 Task Model |
-| **同屏盯多个 worker 并行** | ❌ 伙伴做不到 | 协同模式（Orca）只在普通任务里提供，伙伴聊天没有 |
+| **实现一张票** | `blody session create --agent-role Builder` | 单票 TDD、修 PR / 验收反馈（child）。`--repo` + `--branch`；worktree 由 Lody/role 管 |
+| **一份 spec → 一个 PR** | `blody session create --agent-role Grand Builder` | 编排整份 spec；子票仍用原生 sub-issue |
+| **写 PR body、文档、规则** | `Writer` | 跟 `/pr`；一次性文案 |
+| **查资料** | `Explorer` | 只读摸底，不开实现 PR |
+| **画效果图** | `Painter`（若 live 可用）或 owner 侧 `ui-mockup` | Painter 若报 `agent_config_missing` 就别硬派 |
+| **同屏盯多个 worker 并行** | ❌ 没有 Cindy/Orca 那套 | 并行 = 多个 Lody session / 多个 child；一次只让一个 conversation 写同一 worktree（见 `use-lody`） |
 
 **派工必带的两样**（不带就一定出事）：
-1. **身份**：bot 短名 + `GIT_NAME` / `GIT_EMAIL`（取自 `~/gh-apps/bots/<bot>.conf`）。后台任务不知道自己是哪个 bot。
+1. **身份**：bot 短名 + 字面 `GIT_NAME` / `GIT_EMAIL`（从 `/workspace/gh-apps/bots/<bot>.conf` 抄进 prompt）。Lody session 不知道自己是哪个 bot——见 `use-lody` + `bot-github-identity`。
 2. **哪张票**：issue 链接 + 验收标准 + scope。
 
 **回报契约**：执行者回 PR 链接 + 跑过的测试命令 + 验收标准逐条结果 + 越界点。见 `build`。
+
+跟进 / 催一轮用：
+
+```
+blody session chat <id> --workspace kipyin --prompt-file followup.md
+blody session status <id> --workspace kipyin
+```
 
 ## 幂等纪律（轮询状态机必须遵守）
 
 1. **先占位再干活**：派工前 `--add-label in-progress --remove-label ready-for-agent`。抢到才动手；看到 `in-progress` 就跳过。
 2. **失败回滚**：派工失败立刻把 `ready-for-agent` 打回去、去掉 `in-progress`，并回帖写清原因。**绝不留挂着 `in-progress` 却没人干的票。**
-3. **派工记录**：拿到执行任务/会话 id 后回帖，正文带 `<!-- session: <id> -->`。下次心跳靠它查进度而不是重新派。
-4. **一轮一张**：单次心跳最多派 1 张票、最多推 1 轮修复。
+3. **派工记录**：拿到 Lody session id 后回帖，正文带 `<!-- session: <id> -->`。下次轮询靠它查进度而不是重新派。
+4. **一轮一张**：Gabe 单次轮询最多派 1 张票、最多推 1 轮修复。
 
 ## workload 评估（Grilling 结束时做）
 
 | 条件 | 结论 |
 |---|---|
-| 改动落在一个 PR 能自然完成的范围内：单模块、无跨仓、无 schema 迁移、验收标准一份 Brief 写得清 | **一个 session** → Agent Brief |
-| 需要多个 PR / 跨模块拆分 / 有先后依赖 / 验收标准超过一份 Brief | **多个 session** → Spec + 子票 |
+| 改动落在一个 PR 能自然完成的范围内：单模块、无跨仓、无 schema 迁移、验收标准一份 Brief 写得清 | **一个 Lody session** → Agent Brief → `Builder` |
+| 需要多个 PR / 跨模块拆分 / 有先后依赖 / 验收标准超过一份 Brief | **多个 session / 子票** → Spec + 子票 → `Grand Builder` 编排 |
 
 评估结果写进 issue comment，格式固定：
 
@@ -176,6 +184,8 @@ Kip 明确说「给我一份问卷」「列成清单我自己填」时才产草�
 
 **上限 3 轮**。超过仍在 in-review → 转 `blocked`，附「每轮修了什么、还差什么」。
 
+修 PR / 验收反馈：在**仓库 root session** 下开 Builder child（见 `use-lody` Feedback），不要并行两个 conversation 写同一 worktree。
+
 ## 验收（uat，不跑 CI）
 
 - 逐条对照 PR body 里的验收标准与实际改动
@@ -183,19 +193,21 @@ Kip 明确说「给我一份问卷」「列成清单我自己填」时才产草�
 - 数据类：查库或 245 核实，不看 issue 留言
 - 结论只有两档：**PASS**（可合并）/ **需要修**（退回 in-review，附具体条目）
 
-合并永远由 Kip 做，任何伙伴都不 squash merge。
+合并永远由 Kip 做，任何 bot 都不 squash merge。
 
 ## 角色
 
-- **owner 伙伴**：立项、grilling、workload 评估、Brief/Spec、UAT
-- **orchestrator**（Gabe）：心跳推进、状态迁移、派工、催办
-- **执行者**：实现、修 PR（按 `build` 执行，提交身份见 `github-identity`）
-- **Kip**：业务决策、生产写入、合并
+- **owner bot**：立项、接 grill handoff、workload 收口、Brief/Spec 核对、UAT
+- **orchestrator**（Gabe）：轮询推进、状态迁移、派工、催办
+- **执行者**（Lody Builder / Grand Builder）：实现、修 PR（按 `build` 执行，提交身份见 `github-identity` / `bot-github-identity`）
+- **Kip**：业务决策、进 Lody session 回答 grill、生产写入、合并
 
 ## 禁止
 
 - 给派工后的票补 `in-review` / `uat` / `approved` 标签——这些状态是推导的，手打会与事实冲突
 - 跳过 `ready-for-agent` 直接派工
 - 用 issue 留言当「已完成」的证据（见 `work-board` 的核实纪律）
-- 一个心跳派多张票
+- Gabe 一轮轮询派多张票
 - 让 `in-progress` 的票超过一天没人管而不处理
+- 手选 Lody model / machine / agent-config（必须 `--agent-role`）
+- 用 Grok Bot executor / Cindy `start_session_task` / `subagent` 顶替 Lody session
