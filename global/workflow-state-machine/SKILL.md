@@ -86,6 +86,19 @@ description: >-
 
 Kip 明确说「给我一份问卷」「列成清单我自己填」时才产草稿。
 
+### Griller 的模型
+
+**固定 gpt-6.1-sol @ high**（route：`harness=codex`、`provider_id=openai`、`model=gpt-6.1-sol`、`effort=high`）。
+
+`start_session_task` 没有 model 参数，所以分三步做，别指望建的时候就能指定：
+
+1. **建任务**，instruction 末尾加一句：「先读完票、skill 和相关代码，输出『已就绪』并**结束本轮，不要提问**」
+2. **切模型**：`get_session_runtime(session_id=<任务 id>)` 拿 `generation`，再
+   `set_session_runtime({session_id, harness:"codex", provider_id:"openai", model:"gpt-6.1-sol", effort:"high", expected_generation})`
+3. **放行**：`message_session_task({task_id, message:"模型已切到 gpt-6.1-sol high，现在问第一题"})`
+
+不做第 1 步的直接后果：第一题会是默认模型问的，而 grilling 最贵的恰恰是第一题——它决定后面所有问题的方向。
+
 ### 谁当 Griller
 
 - **owner 伙伴自己开任务当 Griller**，不需要另一个 bot 来主持（Sous Chef 那个角色已取消）
