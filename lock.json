@@ -3,30 +3,6 @@
   "$comment": "Vendored package pins. First-party skill folders not named in any package.skills are never overwritten by kstack sync/update.",
   "version": 1,
   "packages": {
-    "citrolabs/ego-lite": {
-      "source": "citrolabs/ego-lite",
-      "pin": "689f71a7bad8b78e22664ca8708a41ceaf263e93",
-      "tier": "global",
-      "skills": [
-        "ego-browser"
-      ],
-      "hashes": {
-        "ego-browser": "5a758c3393323dda529fd3809b64a8cde01b4a1d1e2ff10f8d76686345db9807"
-      },
-      "fetchedAt": "2026-08-22T10:44:35.672Z"
-    },
-    "herdrdev/herdr": {
-      "source": "herdrdev/herdr",
-      "pin": "1c76079f8b9494ec1c971c80fda34c116ecb89dd",
-      "tier": "global",
-      "skills": [
-        "herdr"
-      ],
-      "hashes": {
-        "herdr": "237ad2ab2d8123e2bb37956d3a41eed141f2d22a7c36e415b7876c0397679099"
-      },
-      "fetchedAt": "2026-08-22T10:44:39.963Z"
-    },
     "iofficeai/officecli": {
       "source": "iofficeai/officecli",
       "pin": "1ced45e900782c5083ed550ddf328ee974e425e7",
@@ -105,17 +81,19 @@
       },
       "fetchedAt": "2026-09-25T15:37:42.797Z"
     },
-    "modem-dev/hunk": {
-      "source": "modem-dev/hunk",
-      "pin": "eb88a9d915938e0c106489dd9dec1d23007fd5f8",
+    "pbakaus/impeccable": {
+      "source": "pbakaus/impeccable",
+      "pin": "0d6b47ea19b63afe15e3f93a44d5d9fbbc6fd275",
       "tier": "global",
       "skills": [
-        "hunk-review"
+        "audit",
+        "impeccable"
       ],
       "hashes": {
-        "hunk-review": "3be51363a248b83db2210f8ef5a59b54ab5ce4f78e856b08431420f85a2b0878"
+        "audit": "4cde685f70c2851d74b5521cefec477756e332e8f3974da53c7a59f858a2a484",
+        "impeccable": "9e6c2ef111f5f46dcc5fd21fdca838579472d3b640b05acd5a1bf1e555a3ea22"
       },
-      "fetchedAt": "2026-08-22T10:44:38.658Z"
+      "fetchedAt": "2026-09-30T13:46:18.505Z"
     }
   }
 }
