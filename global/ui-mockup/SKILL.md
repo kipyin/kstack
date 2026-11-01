@@ -10,7 +10,7 @@ description: >-
 
 ## 谁画
 
-派一个 **Cindy subagent**（worker 角色），把下面 §Brief 的内容作为它的任务，让它产出图片文件并写在本地目录里。不要用主对话的画图能力硬凑，也不要开 Lody session。
+派一个 **Cindy subagent**（worker 角色），把下面 §Brief 的内容作为它的任务，让它产出图片文件并写在本地目录里。不要用主对话的画图能力硬凑。
 
 一次性、用完即弃；同一次改动要出多张时，可以一次派多个 subagent 并行。
 

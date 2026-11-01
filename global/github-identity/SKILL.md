@@ -36,7 +36,7 @@ gh-as gabe  issue edit 42 -R lightxlab/lightmind --add-label ready-for-agent
 
 1. **写走 `gh-as`，读可以用普通 `gh`**（读不受限）。
 2. **绝不用 GitHub 插件/连接器写**：那些一律以 Kip 身份发。读可以。
-3. **提交代码时的身份**：需要别人（Lody Builder、subagent）提交时，把 `GIT_NAME` / `GIT_EMAIL` 的**具体值**写进任务说明，取自 `~/gh-apps/bots/<name>.conf`。拿不到就让对方至少加 `Co-authored-by: <GIT_NAME> <GIT_EMAIL>`。推完核对 GitHub 上的 commit author。
+3. **提交代码时的身份**：需要别人（后台任务、subagent）提交时，把 `GIT_NAME` / `GIT_EMAIL` 的**具体值**写进任务说明，取自 `~/gh-apps/bots/<name>.conf`。拿不到就让对方至少加 `Co-authored-by: <GIT_NAME> <GIT_EMAIL>`。推完核对 GitHub 上的 commit author。
 4. **PR 自己开**：分支推上去后，用 `gh-as <name> pr create` 开，别等人代开。
 5. **别用 Kip 的 token 绕过**：不存在 `GH_GUARD_ALLOW_KIP` 这种例外——本机没装 guard，全靠这条规则约束。
 6. **`wayfinding:*` 标签只有 Wayfinder 能加**，任何 bot 都不加、不改、不通过别人加。
