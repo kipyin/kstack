@@ -48,11 +48,26 @@ description: >-
 任一环节出问题 → blocked（人写）
 ```
 
+## 派工机制（四选一，按活的性质）
+
+| 用在哪 | 用什么 | 说明 |
+|---|---|---|
+| **实现一张票 / 一份 spec** | `start_session_task` | 长跑、要独立 worktree、要产 PR。带 `working_dir` + `use_worktree=true` + `timeout_ms` |
+| **写 PR body、查资料、画效果图** | `subagent` | 一次性，一次一句话。查资料用 `agent:"scout"`，写文用 worker |
+| **需要特定模型的一次性任务**（如 opus 追问、gpt 决策地图） | `subagent(model=..., async=true)` | **只有 subagent 能指定模型**；`start_session_task` 用伙伴的 Task Model |
+| **同屏盯多个 worker 并行** | ❌ 伙伴做不到 | 协同模式（Orca）只在普通任务里提供，伙伴聊天没有 |
+
+**派工必带的两样**（不带就一定出事）：
+1. **身份**：bot 短名 + `GIT_NAME` / `GIT_EMAIL`（取自 `~/gh-apps/bots/<bot>.conf`）。后台任务不知道自己是哪个 bot。
+2. **哪张票**：issue 链接 + 验收标准 + scope。
+
+**回报契约**：执行者回 PR 链接 + 跑过的测试命令 + 验收标准逐条结果 + 越界点。见 `build`。
+
 ## 幂等纪律（轮询状态机必须遵守）
 
 1. **先占位再干活**：派工前 `--add-label in-progress --remove-label ready-for-agent`。抢到才动手；看到 `in-progress` 就跳过。
 2. **失败回滚**：派工失败立刻把 `ready-for-agent` 打回去、去掉 `in-progress`，并回帖写清原因。**绝不留挂着 `in-progress` 却没人干的票。**
-3. **派工记录**：拿到执行会话 id 后回帖，正文带 `<!-- session: <id> -->`。下次心跳靠它查进度而不是重新派。
+3. **派工记录**：拿到执行任务/会话 id 后回帖，正文带 `<!-- session: <id> -->`。下次心跳靠它查进度而不是重新派。
 4. **一轮一张**：单次心跳最多派 1 张票、最多推 1 轮修复。
 
 ## workload 评估（Grilling 结束时做）
@@ -106,7 +121,7 @@ description: >-
 
 - **owner 伙伴**：立项、grilling、workload 评估、Brief/Spec、UAT
 - **orchestrator**（Gabe）：心跳推进、状态迁移、派工、催办
-- **执行者**：实现、修 PR，提交身份见 `github-identity`
+- **执行者**：实现、修 PR（按 `build` 执行，提交身份见 `github-identity`）
 - **Kip**：业务决策、生产写入、合并
 
 ## 禁止
