@@ -2,8 +2,10 @@
 name: work-board
 description: >-
   Use when a bot starts, advances or finishes LightX work that must appear on
-  the lightxlab work queue, when syncing the work list with Kip, or when
-  checking whether effort drifted from what is due.
+  the lightxlab board (Project #4), when checking or setting the board's Owner
+  or Priority, when syncing the work list with Kip, or when checking whether
+  effort drifted from what is due. Covers the board, 看板, todo list, queue
+  order and who owes what.
 ---
 # work-board
 
