@@ -7,27 +7,52 @@ description: >-
 ---
 # workflow-state-machine
 
-从「想法」到「合并」的七个状态。**状态存在 GitHub label 上，依赖存在原生 sub-issue + `blocked_by` 里**，不另存任何图。
+从「想法」到「合并」的七个状态。**人只写三个标签，其余状态从 GitHub 事实推导。**依赖存在原生 sub-issue + `blocked_by` 里，不另存任何图。
 
-## 状态表
+## 人写的标签（只有三个）
 
-| 状态 | label | 谁推进 | 产出 | 退出条件 |
-|---|---|---|---|---|
-| 已立项 | `bug` 或 `enhancement` + `needs-triage` | owner 伙伴 | issue（含复现/期望） | 开出 grilling |
-| Grilling | `grilling` | Kip + 伙伴 | 决策记录、效果图 | workload 评估完成 |
-| Agent Brief | `ready-for-agent` | 伙伴 | issue comment: Brief | 进入实现 |
-| Spec + 子票 | spec 票 `ready-for-agent` + `spec`；子票 `ready-for-agent` | 伙伴 | 原 issue 改写为 Spec、原生 sub-issues | 子票全 ready |
-| 实现中 | `in-progress` | 执行者 | 1 个 PR | PR 打开 |
-| 修复循环 | `in-review` | 执行者 | 修复提交 + 逐条回复 | 四项检查全清 |
-| 待验收 | `uat` | owner 伙伴（不跑 CI） | 验收结论 | 判 PASS |
-| 待合并 | `approved` | **Kip** | — | squash merge |
-| 阻塞 | `blocked` | 谁发现谁写 | 原因 + 下一步 | Kip 决定 |
+| label | 谁写 | 含义 |
+|---|---|---|
+| `needs-triage` | owner 伙伴 | 刚立项，等 triage |
+| `ready-for-agent` | triage 通过方 | **唯一放行闸**：可以派工了 |
+| `blocked` | 谁发现谁写 | 需要 Kip 决定，不能自己往下走 |
+
+其余状态**不需要人打**。谁也不用记着「现在该打 uat 了」。
+
+## 推导态（脚本算，标签不参与）
+
+只要 issue 上有 PR，状态就从 PR 事实推出来：
+
+| 推导态 | 依据 |
+|---|---|
+| 执行中 | PR 存在且仍是 draft |
+| 修复循环 | PR 开着，CI 有失败 / 未跑完 / 有 change request |
+| 待验收 | PR 开着，非 draft，CI 全绿，无 change request |
+| 待合并 | PR 已被 approve |
+| 已完成 | issue 关闭（不再出现在列表里） |
+
+`in-progress` **保留但不当作状态**：它是派工前的**互斥锁**，防止两轮心跳重复派工。写完就不管，没人靠它读状态。
+
+## 完整流转
+
+```
+立项（needs-triage）
+  → triage + grill + workload 评估
+  → ready-for-agent                ← 人打的唯一放行
+  → 抢占 in-progress + 派工        ← 互斥锁，不是状态
+  → PR 出现（draft）       · 执行中（推导）
+  → PR 转 ready             · 修复循环 / 待验收（推导）
+  → approve                · 待合并（推导）
+  → Kip squash merge       · 已完成（推导）
+
+任一环节出问题 → blocked（人写）
+```
 
 ## 幂等纪律（轮询状态机必须遵守）
 
 1. **先占位再干活**：派工前 `--add-label in-progress --remove-label ready-for-agent`。抢到才动手；看到 `in-progress` 就跳过。
-2. **失败回滚**：派工失败立刻把 label 打回 `ready-for-agent` 并回帖写清原因。**绝不留挂着 `in-progress` 却没人干的票。**
-3. **派工记录**：拿到执行会话 id 后回帖，正文带 `<!-- session: <id> -->`，下次心跳靠它查进度而不是重新派。
+2. **失败回滚**：派工失败立刻把 `ready-for-agent` 打回去、去掉 `in-progress`，并回帖写清原因。**绝不留挂着 `in-progress` 却没人干的票。**
+3. **派工记录**：拿到执行会话 id 后回帖，正文带 `<!-- session: <id> -->`。下次心跳靠它查进度而不是重新派。
 4. **一轮一张**：单次心跳最多派 1 张票、最多推 1 轮修复。
 
 ## workload 评估（Grilling 结束时做）
@@ -86,7 +111,8 @@ description: >-
 
 ## 禁止
 
-- 跳过状态直接改 label 到 `approved`
+- 给派工后的票补 `in-review` / `uat` / `approved` 标签——这些状态是推导的，手打会与事实冲突
+- 跳过 `ready-for-agent` 直接派工
 - 用 issue 留言当「已完成」的证据（见 `work-board` 的核实纪律）
 - 一个心跳派多张票
 - 让 `in-progress` 的票超过一天没人管而不处理
