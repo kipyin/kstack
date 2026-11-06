@@ -53,7 +53,7 @@ ffmpeg -i "$INPUT" -filter_complex \
    ```
 
    打印出 `$R2_PUBLIC_BASE` 下的 URL（`https://pub-….r2.dev/pr-images/...`）就算完成。
-3. **嵌入**。在 GitHub 上需要的位置写 `![描述](URL)`，使用 `github-identity` 规定的身份发布。图片在 GitHub 页面上真的显示出来才算完成。
+3. **嵌入**。在 GitHub 上需要的位置写 `![描述](URL)`。图片在 GitHub 页面上真的显示出来才算完成。
 
 ## 两条捷径
 
