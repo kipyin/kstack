@@ -16,19 +16,19 @@ description: >-
 | 模式 | 谁派 | 你的终点 |
 |---|---|---|
 | **编排模式** | 上级编排任务（Grand Builder 形态），给了目标分支 | commit 到那个分支就停。**不 push、不开 PR** |
-| **独立模式** | 直接为一张票派你 | 跑测试 → 写 PR body → push → `gh-as <bot> pr create` |
+| **独立模式** | 直接为一张票派你 | 跑测试 → 写 PR body → push → `gh pr create` |
 
 ## 身份（最容易漏的一条）
 
-任务说明里必须给 bot 短名 + `GIT_NAME` / `GIT_EMAIL`（取值见 `~/gh-apps/bots/<bot>.conf`）。
+任务说明要求提交使用 `kipyin` 身份，先按 `github-identity` 确认身份。
 
 **没给就停下来问**，绝不用机器默认 git 身份提交——那样 commit 会挂在某个无关账号上。
 
 ```
-git -c user.name="<GIT_NAME>" -c user.email="<GIT_EMAIL>" commit -m "..."
+git commit -m "..."
 ```
 
-GitHub 写操作一律 `gh-as <bot> ...`，见 `github-identity`。
+GitHub 写操作使用当前授权的 `kipyin` 身份，见 `github-identity`。
 
 ## 范围
 
