@@ -11,6 +11,8 @@ description: >-
 
 LightX 未完成工作的 **SoT 是 org Project #4**。只有真实 issue（及其 PR），没有草稿件，不用 Todoist 当 bot 看板。
 
+旧名 `bot-todo-board`、`work-list-sync`、`work-priority-drift`、`progress-brief`、`work-os-notes` 都指回这里：队列、Owner、Priority 和关闭证据不另起一套。清单同步、偏离、状态行和笔记分流若需要单独步骤，读 Alma 个人技能里的同名技能；那些技能不改本文件的字段和 id。
+
 ## 常量
 
 - **Project**：`lightxlab` org 的 [#4 LightX bot work queue](https://github.com/orgs/lightxlab/projects/4)。不要用也不要改 #1–#3（那是产品路线板）。
@@ -41,19 +43,19 @@ LightX 未完成工作的 **SoT 是 org Project #4**。只有真实 issue（及�
 ## 每个关卡的动作
 
 1. **定位 issue**（repo + 号）。没有就先在 owner 身份下开一个；`spec` 父下的子票，板上目标是**父**。
-2. **确保在板上**：`gh-as <bot> project item-add 4 --owner lightxlab --url <issue-url>`（已是 spec 父的原生 sub-issue 就跳过）。
+2. **确保在板上**：`gh project item-add 4 --owner lightxlab --url <issue-url>`（已是 spec 父的原生 sub-issue 就跳过）。
 3. **确保 Owner** 是你的短名。
 4. **确保 Priority**（Kip 或催办给过的话）。
 5. **收尾前**回看 #4 上 Owner=你的未完成项，按规则 3 拿证据后再关或改 Status。
 
 ## 命令行
 
-先读 `github-identity`，所有 lightxlab Project 写操作都走 `gh-as <bot>`（App 自 2026-10-23 起有 `organization_projects: write`）。
+先读 `github-identity`，lightxlab Project 写操作使用当前授权的 `kipyin` 身份。
 
 ```
-gh-as <bot> project item-edit --id <item-id> --project-id PVT_kwDOFBTO084BoYLm \
+gh project item-edit --id <item-id> --project-id PVT_kwDOFBTO084BoYLm \
   --field-id PVTSSF_lADOFBTO084BoYLmzhm4pMA --single-select-option-id <owner-option-id>
-gh-as <bot> project item-edit --id <item-id> --project-id PVT_kwDOFBTO084BoYLm \
+gh project item-edit --id <item-id> --project-id PVT_kwDOFBTO084BoYLm \
   --field-id PVTSSF_lADOFBTO084BoYLmzhm4yLE --single-select-option-id <priority-option-id>
 ```
 

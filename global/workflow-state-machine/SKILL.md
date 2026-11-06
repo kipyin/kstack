@@ -77,7 +77,7 @@ description: >-
 - 一轮只问一题，问完就结束本轮，等 Kip 回答
 - 每题给：问题 + 选项（选项要能直接选）；不要单独堆「白话 / 后果 / 推荐」模板
 - Kip 答完再问下一题；上一题的答案可能让后面的问题作废，据此调整
-- 每得到一条结论，立即以正确 bot 身份 issue comment 写回 <票号>
+- 每得到一条结论，立即按 `github-identity` 使用授权身份 issue comment 写回 <票号>
 - 不代选、不批量列问题、不自己编答案
 - 不要改 label、不开 PR、不 push
 ```
@@ -127,7 +127,7 @@ Kip 明确说「给我一份问卷」「列成清单我自己填」时才产草�
 | **同屏盯多个 worker 并行** | ❌ 没有 Cindy/Orca 那套 | 并行 = 多个 Lody session / 多个 child；一次只让一个 conversation 写同一 worktree（见 `use-lody`） |
 
 **派工必带的两样**（不带就一定出事）：
-1. **身份**：bot 短名 + 字面 `GIT_NAME` / `GIT_EMAIL`（从 `/workspace/gh-apps/bots/<bot>.conf` 抄进 prompt）。Lody session 不知道自己是哪个 bot——见 `use-lody` + `bot-github-identity`。
+1. **身份**：任务说明要求提交使用 `kipyin` 身份，并按 `github-identity` 确认。
 2. **哪张票**：issue 链接 + 验收标准 + scope。
 
 **回报契约**：执行者回 PR 链接 + 跑过的测试命令 + 验收标准逐条结果 + 越界点。见 `build`。
@@ -163,7 +163,7 @@ blody session status <id> --workspace kipyin
 
 ## Agent Brief 必含
 
-目标、现状、改动点（文件级）、验收标准（可逐条判定）、**不做什么**、提交身份（`GIT_NAME` / `GIT_EMAIL`）、关联 issue。
+目标、现状、改动点（文件级）、验收标准（可逐条判定）、**不做什么**、提交身份（按 `github-identity` 确认）、关联 issue。
 
 ## Spec 与子票
 
