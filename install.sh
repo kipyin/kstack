@@ -11,17 +11,17 @@ WORKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ $# -gt 1 ]]; then
   echo "error: unexpected extra arguments: ${*:2}" >&2
-  echo "usage: $0 [global|lighthouse|lightmind|eloquent|pwc-graphic-elements|lighthouse-gi-solvency]" >&2
+  echo "usage: $0 [global|lighthouse|lightmind|lighthub|xharness|lightology|eloquent|pwc-graphic-elements|lighthouse-gi-solvency]" >&2
   exit 1
 fi
 
 PROJECT="${1:-global}"
 
 case "$PROJECT" in
-  global|lighthouse|lightmind|eloquent|pwc-graphic-elements|lighthouse-gi-solvency) ;;
+  global|lighthouse|lightmind|lighthub|xharness|lightology|eloquent|pwc-graphic-elements|lighthouse-gi-solvency) ;;
   *)
     echo "error: unknown project '${PROJECT}'." >&2
-    echo "Expected: global, lighthouse, lightmind, eloquent, pwc-graphic-elements, or lighthouse-gi-solvency (omit for global only)." >&2
+    echo "Expected: global, lighthouse, lightmind, lighthub, xharness, lightology, eloquent, pwc-graphic-elements, or lighthouse-gi-solvency (omit for global only)." >&2
     exit 1
     ;;
 esac
@@ -39,10 +39,15 @@ copy_skill_dirs() {
 
   local src name
   while IFS= read -r -d '' src; do
+    [[ -d "$src" ]] || continue
     name="$(basename "$src")"
     rm -rf "${DEST}/${name}"
-    cp -R "$src" "${DEST}/${name}"
-  done < <(find "$src_root" -mindepth 1 -maxdepth 1 -type d ! -name '.*' -print0)
+    if [[ -L "$src" ]]; then
+      cp -RL "$src" "${DEST}/${name}"
+    else
+      cp -R "$src" "${DEST}/${name}"
+    fi
+  done < <(find "$src_root" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) ! -name '.*' -print0)
 }
 
 copy_skill_dirs "${WORKDIR}/global" "global"

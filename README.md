@@ -53,7 +53,7 @@ Wire an app's Cloud Agent environment so it copies skills and reapplies identity
 
 [`.cursor/hooks/install-identity.sh`](.cursor/hooks/install-identity.sh) is the identity contract. [`.cursor/start.sh`](.cursor/start.sh) is the reapply pattern.
 
-1. In the app's `.cursor/install.sh`, after product setup, clone GitHub kstack and copy skills. Replace `<project>` with a name [install.sh](install.sh) accepts: `global`, `lighthouse`, `lightmind`, `eloquent`, or `pwc-graphic-elements`.
+1. In the app's `.cursor/install.sh`, after product setup, clone GitHub kstack and copy skills. Replace `<project>` with a name [install.sh](install.sh) accepts: `global`, `lighthouse`, `lightmind`, `lighthub`, `xharness`, `lightology`, `eloquent`, `pwc-graphic-elements`, or `lighthouse-gi-solvency`.
 
 ```
 KSTACK_DIR="${HOME}/.cursor/kstack"
@@ -97,7 +97,7 @@ kstack status
 kstack link [--force]
 kstack sync [pkg]              # rewrite owned folders at the current pin
 kstack update [pkg|skill]      # bump pin, then rewrite owned folders
-kstack add <source> --scope global|lighthouse|lightmind [--skill name]...
+kstack add <source> --scope global|lighthouse|lightmind|lighthub|xharness|lightology [--skill name]...
 ```
 
 `sync` / `update` only touch folders listed in [lock.json](lock.json). Hand-written skills are left alone.

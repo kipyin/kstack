@@ -1,4 +1,11 @@
-export const TIERS = ["global", "lighthouse", "lightmind"] as const;
+export const TIERS = [
+  "global",
+  "lighthouse",
+  "lightmind",
+  "lighthub",
+  "xharness",
+  "lightology",
+] as const;
 export type Tier = (typeof TIERS)[number];
 
 export const KIND = ["first-party", "lock-owned"] as const;
@@ -8,6 +15,7 @@ export type LockPackage = {
   source: string;
   pin: string;
   tier: Tier;
+  tiers: Tier[];
   skills: string[];
   hashes: Record<string, string>;
   fetchedAt: string;

@@ -4,13 +4,12 @@ import { pathsForTier } from "../config.js";
 import { exists, isDir, isSymlink } from "../fsutil.js";
 import { sha256File } from "../hash.js";
 import { scanRepo, tierDir } from "../inventory.js";
-import { packageIds } from "../lock.js";
+import { packageIds, packageTiers } from "../lock.js";
 import { skillMdPath } from "../discover.js";
 import { resolvePath } from "../paths.js";
 import { skillDest } from "../skillname.js";
 import type { RepoContext } from "../types.js";
 import { TIERS } from "../types.js";
-import { assertNever } from "../never.js";
 
 export type SymlinkHealth =
   | "ok"
@@ -58,18 +57,22 @@ export function runStatus(ctx: RepoContext): number {
     if (pkg === undefined) {
       continue;
     }
+    const tiers = packageTiers(pkg);
     const missing: string[] = [];
     const hashDrift: string[] = [];
-    for (const name of pkg.skills) {
-      const dir = skillDest(tierDir(ctx.repoRoot, pkg.tier), name);
-      const md = skillMdPath(dir);
-      if (!exists(md)) {
-        missing.push(name);
-        continue;
-      }
-      const expected = pkg.hashes[name];
-      if (expected !== undefined && sha256File(md) !== expected) {
-        hashDrift.push(name);
+    for (const tier of tiers) {
+      for (const name of pkg.skills) {
+        const label = tiers.length > 1 ? `${tier}/${name}` : name;
+        const dir = skillDest(tierDir(ctx.repoRoot, tier), name);
+        const md = skillMdPath(dir);
+        if (!exists(md)) {
+          missing.push(label);
+          continue;
+        }
+        const expected = pkg.hashes[name];
+        if (expected !== undefined && sha256File(md) !== expected) {
+          hashDrift.push(label);
+        }
       }
     }
     const pinLabel = pkg.pin.length > 0 ? pkg.pin : "(empty)";
@@ -88,7 +91,7 @@ export function runStatus(ctx: RepoContext): number {
     }
     const flagText = flags.length > 0 ? `  DRIFT ${flags.join(" ")}` : "  ok";
     console.log(
-      `  ${id}  pin=${pinLabel}  ${pkg.tier}/  ${pkg.skills.length} skills${flagText}`,
+      `  ${id}  pin=${pinLabel}  ${tiers.join(",")}/  ${pkg.skills.length} skills${flagText}`,
     );
   }
   if (packageIds(ctx.lock).length === 0) {
@@ -122,14 +125,6 @@ export function runStatus(ctx: RepoContext): number {
   console.log("symlinks");
   let symlinkIssues = 0;
   for (const tier of TIERS) {
-    switch (tier) {
-      case "global":
-      case "lighthouse":
-      case "lightmind":
-        break;
-      default:
-        assertNever(tier);
-    }
     const skills = records.filter((s) => s.tier === tier);
     for (const raw of pathsForTier(ctx.config, tier)) {
       const destRoot = resolvePath(raw);

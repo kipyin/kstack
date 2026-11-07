@@ -1,13 +1,13 @@
 import { renameSync, writeFileSync } from "node:fs";
 import { isTier, type LockFile, type LockPackage, type Tier } from "./types.js";
 import { readText } from "./fsutil.js";
-import { assertNever } from "./never.js";
 import { assertSkillName } from "./skillname.js";
 
 type RawLockPackage = {
   source?: unknown;
   pin?: unknown;
   tier?: unknown;
+  tiers?: unknown;
   skills?: unknown;
   hashes?: unknown;
   fetchedAt?: unknown;
@@ -40,6 +40,7 @@ function parsePackage(id: string, raw: RawLockPackage): LockPackage {
   if (!isTier(tierValue)) {
     throw new Error(`packages.${id}.tier must be a known tier`);
   }
+  const tiers = parseTiers(id, tierValue, raw.tiers);
   const skills = asStringArray(raw.skills, `packages.${id}.skills`);
   if (new Set(skills).size !== skills.length) {
     throw new Error(`packages.${id}.skills contains duplicates`);
@@ -65,7 +66,35 @@ function parsePackage(id: string, raw: RawLockPackage): LockPackage {
     raw.fetchedAt === undefined
       ? ""
       : asString(raw.fetchedAt, `packages.${id}.fetchedAt`);
-  return { source, pin, tier: tierValue, skills, hashes, fetchedAt };
+  return { source, pin, tier: tierValue, tiers, skills, hashes, fetchedAt };
+}
+
+function parseTiers(id: string, tier: Tier, raw: unknown): Tier[] {
+  if (raw === undefined) {
+    return [tier];
+  }
+  const values = asStringArray(raw, `packages.${id}.tiers`);
+  if (values.length === 0) {
+    throw new Error(`packages.${id}.tiers must list at least one tier`);
+  }
+  const tiers: Tier[] = [];
+  for (const value of values) {
+    if (!isTier(value)) {
+      throw new Error(`packages.${id}.tiers must be known tiers`);
+    }
+    if (tiers.includes(value)) {
+      throw new Error(`packages.${id}.tiers contains duplicates`);
+    }
+    tiers.push(value);
+  }
+  if (!tiers.includes(tier)) {
+    throw new Error(`packages.${id}.tier must be included in tiers`);
+  }
+  return tiers;
+}
+
+export function packageTiers(pkg: LockPackage): Tier[] {
+  return pkg.tiers.length > 0 ? pkg.tiers : [pkg.tier];
 }
 
 export function parseLock(text: string): LockFile {
@@ -91,14 +120,17 @@ export function parseLock(text: string): LockFile {
   }
   const owned = new Map<string, string>();
   for (const [id, pkg] of Object.entries(packages)) {
-    for (const skill of pkg.skills) {
-      const previous = owned.get(skill);
-      if (previous !== undefined && previous !== id) {
-        throw new Error(
-          `skill '${skill}' is owned by both '${previous}' and '${id}'`,
-        );
+    for (const tier of packageTiers(pkg)) {
+      for (const skill of pkg.skills) {
+        const key = `${tier}/${skill}`;
+        const previous = owned.get(key);
+        if (previous !== undefined && previous !== id) {
+          throw new Error(
+            `skill '${skill}' in ${tier}/ is owned by both '${previous}' and '${id}'`,
+          );
+        }
+        owned.set(key, id);
       }
-      owned.set(skill, id);
     }
   }
   return {
@@ -119,12 +151,16 @@ export function serializeLock(lock: LockFile): string {
     if (pkg === undefined) {
       continue;
     }
+    const tiers = packageTiers(pkg);
     const entry: Record<string, unknown> = {
       source: pkg.source,
       pin: pkg.pin,
-      tier: pkg.tier,
+      tier: tiers[0] ?? pkg.tier,
       skills: pkg.skills,
     };
+    if (tiers.length > 1) {
+      entry.tiers = tiers;
+    }
     if (Object.keys(pkg.hashes).length > 0) {
       entry.hashes = pkg.hashes;
     }
@@ -151,11 +187,32 @@ export function writeLock(path: string, lock: LockFile): void {
   renameSync(tmp, path);
 }
 
-export function ownerOfSkill(lock: LockFile, skill: string): string | null {
+export function ownersOfSkill(
+  lock: LockFile,
+  skill: string,
+  tier?: Tier,
+): string[] {
+  const ids: string[] = [];
   for (const [id, pkg] of Object.entries(lock.packages)) {
-    if (pkg.skills.includes(skill)) {
-      return id;
+    if (!pkg.skills.includes(skill)) {
+      continue;
     }
+    if (tier !== undefined && !packageTiers(pkg).includes(tier)) {
+      continue;
+    }
+    ids.push(id);
+  }
+  return ids.sort();
+}
+
+export function ownerOfSkill(
+  lock: LockFile,
+  skill: string,
+  tier?: Tier,
+): string | null {
+  const ids = ownersOfSkill(lock, skill, tier);
+  if (ids.length === 1) {
+    return ids[0] ?? null;
   }
   return null;
 }
@@ -171,9 +228,14 @@ export function selectPackages(lock: LockFile, query?: string): string[] {
   if (lock.packages[query] !== undefined) {
     return [query];
   }
-  const owner = ownerOfSkill(lock, query);
-  if (owner !== null) {
-    return [owner];
+  const owners = ownersOfSkill(lock, query);
+  if (owners.length === 1) {
+    return owners;
+  }
+  if (owners.length > 1) {
+    throw new Error(
+      `ambiguous skill '${query}'; owned by: ${owners.join(", ")}`,
+    );
   }
   const matches = packageIds(lock).filter(
     (id) => id === query || id.endsWith(`/${query}`) || id.includes(query),
@@ -194,21 +256,19 @@ export function selectPackages(lock: LockFile, query?: string): string[] {
 
 export function emptyPackage(
   source: string,
-  tier: Tier,
+  tier: Tier | readonly Tier[],
   skills: string[],
 ): LockPackage {
-  switch (tier) {
-    case "global":
-    case "lighthouse":
-    case "lightmind":
-      break;
-    default:
-      assertNever(tier);
+  const tiers = typeof tier === "string" ? [tier] : [...tier];
+  const first = tiers[0];
+  if (first === undefined) {
+    throw new Error("package needs a tier");
   }
   return {
     source,
     pin: "",
-    tier,
+    tier: first,
+    tiers,
     skills,
     hashes: {},
     fetchedAt: "",

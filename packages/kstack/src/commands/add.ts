@@ -1,20 +1,38 @@
-import { emptyPackage, writeLock } from "../lock.js";
+import { emptyPackage, packageTiers, writeLock } from "../lock.js";
 import { fetchSource, selectDiscovered, writeOwnedSkills } from "../materialize.js";
 import { parseSource } from "../git.js";
 import type { RepoContext, Tier } from "../types.js";
-import { isTier } from "../types.js";
+import { TIERS, isTier } from "../types.js";
 
 export type AddOptions = {
   source: string;
-  scope: string;
+  scope: string | readonly string[];
   skills: string[];
 };
 
-export function runAdd(ctx: RepoContext, options: AddOptions): void {
-  if (!isTier(options.scope)) {
-    throw new Error(`--scope must be global, lighthouse, or lightmind`);
+function sameTiers(left: readonly Tier[], right: readonly Tier[]): boolean {
+  return left.length === right.length && left.every((tier, index) => tier === right[index]);
+}
+
+function scopesOf(scope: string | readonly string[]): Tier[] {
+  const list = typeof scope === "string" ? [scope] : [...scope];
+  if (list.length === 0) {
+    throw new Error(`--scope is required (${TIERS.join("|")})`);
   }
-  const scope: Tier = options.scope;
+  const tiers: Tier[] = [];
+  for (const item of list) {
+    if (!isTier(item)) {
+      throw new Error(`--scope must be ${TIERS.join("|")}; got '${item}'`);
+    }
+    if (!tiers.includes(item)) {
+      tiers.push(item);
+    }
+  }
+  return tiers;
+}
+
+export function runAdd(ctx: RepoContext, options: AddOptions): void {
+  const scopes = scopesOf(options.scope);
   const parsed = parseSource(options.source);
   const packageId = parsed.source;
   const existing = ctx.lock.packages[packageId];
@@ -23,18 +41,12 @@ export function runAdd(ctx: RepoContext, options: AddOptions): void {
     const wanted = options.skills.length > 0 ? options.skills : null;
     const selected = selectDiscovered(fetched.discovered, wanted);
     const names = selected.map((skill) => skill.name);
-    const base =
-      existing ??
-      emptyPackage(
-        parsed.source,
-        scope,
-        names,
-      );
-    if (existing !== undefined && existing.tier !== scope) {
+    if (existing !== undefined && !sameTiers(packageTiers(existing), scopes)) {
       throw new Error(
-        `package '${packageId}' is already locked to tier ${existing.tier}; got --scope ${scope}`,
+        `package '${packageId}' is already locked to ${packageTiers(existing).join(", ")}; got --scope ${scopes.join(", ")}`,
       );
     }
+    const base = existing ?? emptyPackage(parsed.source, scopes, names);
     const next = writeOwnedSkills(
       ctx,
       packageId,
@@ -46,7 +58,7 @@ export function runAdd(ctx: RepoContext, options: AddOptions): void {
     ctx.lock.packages[packageId] = next;
     writeLock(ctx.lockPath, ctx.lock);
     console.log(
-      `added ${packageId} @ ${fetched.pin} → ${scope}/ (${names.join(", ")})`,
+      `added ${packageId} @ ${fetched.pin} → ${scopes.join(", ")} (${names.join(", ")})`,
     );
   } finally {
     fetched.cleanup();

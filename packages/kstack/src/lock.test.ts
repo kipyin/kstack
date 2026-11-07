@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { parseLock, selectPackages, serializeLock } from "./lock.js";
+import { ownerOfSkill, parseLock, selectPackages, serializeLock } from "./lock.js";
 import { skillsRepoRoot } from "./testutil.js";
 
 describe("lock.json", () => {
@@ -44,6 +44,28 @@ describe("lock.json", () => {
         ),
       /invalid skill name/,
     );
+  });
+
+  it("allows the same skill name in different tiers", () => {
+    const lock = parseLock(
+      JSON.stringify({
+        version: 1,
+        packages: {
+          a: { source: "a", pin: "", tier: "global", skills: ["dup"] },
+          b: {
+            source: "b",
+            pin: "",
+            tier: "lighthub",
+            tiers: ["lighthub", "xharness", "lightology"],
+            skills: ["dup"],
+          },
+        },
+      }),
+    );
+    assert.equal(ownerOfSkill(lock, "dup", "global"), "a");
+    assert.equal(ownerOfSkill(lock, "dup", "lighthub"), "b");
+    assert.equal(ownerOfSkill(lock, "dup", "lightology"), "b");
+    assert.throws(() => selectPackages(lock, "dup"), /ambiguous skill/);
   });
 
   it("rejects two packages owning the same skill", () => {

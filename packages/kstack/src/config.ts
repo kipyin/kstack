@@ -2,7 +2,6 @@ import { parse } from "smol-toml";
 import { TIERS, type KstackConfig, type LinkPaths, type Tier } from "./types.js";
 import { isTier } from "./types.js";
 import { readText } from "./fsutil.js";
-import { assertNever } from "./never.js";
 
 type RawConfig = {
   paths?: unknown;
@@ -18,11 +17,10 @@ function asStringArray(value: unknown, label: string): string[] {
 export function parseConfigToml(text: string): KstackConfig {
   const raw = parse(text) as RawConfig;
 
-  const paths: LinkPaths = {
-    global: [],
-    lighthouse: [],
-    lightmind: [],
-  };
+  const paths = {} as LinkPaths;
+  for (const tier of TIERS) {
+    paths[tier] = [];
+  }
 
   if (raw.paths !== undefined) {
     if (raw.paths === null || typeof raw.paths !== "object") {
@@ -36,17 +34,6 @@ export function parseConfigToml(text: string): KstackConfig {
     }
   }
 
-  for (const tier of TIERS) {
-    switch (tier) {
-      case "global":
-      case "lighthouse":
-      case "lightmind":
-        break;
-      default:
-        assertNever(tier);
-    }
-  }
-
   return { paths };
 }
 
@@ -55,14 +42,5 @@ export function loadConfig(path: string): KstackConfig {
 }
 
 export function pathsForTier(config: KstackConfig, tier: Tier): string[] {
-  switch (tier) {
-    case "global":
-      return config.paths.global;
-    case "lighthouse":
-      return config.paths.lighthouse;
-    case "lightmind":
-      return config.paths.lightmind;
-    default:
-      return assertNever(tier);
-  }
+  return config.paths[tier];
 }

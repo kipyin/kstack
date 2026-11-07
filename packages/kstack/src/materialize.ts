@@ -1,9 +1,9 @@
 import { exists } from "./fsutil.js";
-import { copyDirReplace } from "./fsutil.js";
+import { copyDirReplace, symlinkSkillDir } from "./fsutil.js";
 import { sha256File } from "./hash.js";
 import { discoverSkills, skillMdPath, type DiscoveredSkill } from "./discover.js";
 import { cloneAtRef, currentPin, removeTempDir, resolveSource } from "./git.js";
-import { ownerOfSkill } from "./lock.js";
+import { ownersOfSkill, packageTiers } from "./lock.js";
 import { tierDir } from "./inventory.js";
 import { assertSkillName, skillDest } from "./skillname.js";
 import type { LockFile, LockPackage, RepoContext, Tier } from "./types.js";
@@ -71,7 +71,13 @@ function assertWritable(
   packageId: string,
 ): void {
   const dest = skillDest(tierDir(ctx.repoRoot, tier), skillName);
-  const owner = ownerOfSkill(ctx.lock, skillName);
+  const owners = ownersOfSkill(ctx.lock, skillName, tier);
+  const owner = owners.length === 1 ? owners[0] ?? null : null;
+  if (owners.length > 1) {
+    throw new Error(
+      `refusing to write '${skillName}' in ${tier}/: owned by ${owners.join(", ")}`,
+    );
+  }
   if (owner !== null && owner !== packageId) {
     throw new Error(
       `refusing to write '${skillName}': already owned by lock package '${owner}'`,
@@ -92,23 +98,36 @@ export function writeOwnedSkills(
   pin: string,
   containRoot: string,
 ): LockPackage {
+  const tiers = packageTiers(pkg);
   if (selected.length === 0) {
     throw new Error(`no valid skills to write for ${packageId}`);
   }
-  for (const skill of selected) {
-    assertWritable(ctx, pkg.tier, skill.name, packageId);
+  for (const tier of tiers) {
+    for (const skill of selected) {
+      assertWritable(ctx, tier, skill.name, packageId);
+    }
   }
+  const primary = tiers[0] ?? pkg.tier;
   const hashes: Record<string, string> = { ...pkg.hashes };
   for (const skill of selected) {
-    const dest = skillDest(tierDir(ctx.repoRoot, pkg.tier), skill.name);
+    const dest = skillDest(tierDir(ctx.repoRoot, primary), skill.name);
     copyDirReplace(skill.dir, dest, containRoot);
     hashes[skill.name] = sha256File(skillMdPath(dest));
   }
+  for (const tier of tiers.slice(1)) {
+    for (const skill of selected) {
+      const dest = skillDest(tierDir(ctx.repoRoot, tier), skill.name);
+      const source = skillDest(tierDir(ctx.repoRoot, primary), skill.name);
+      symlinkSkillDir(dest, source);
+    }
+  }
   const skills = [...new Set([...pkg.skills, ...selected.map((s) => s.name)])];
+  const tier = primary;
   return {
     source: pkg.source,
     pin,
-    tier: pkg.tier,
+    tier,
+    tiers,
     skills,
     hashes,
     fetchedAt: new Date().toISOString(),
@@ -150,5 +169,5 @@ export function materializePackage(
 }
 
 export function firstPartyNames(lock: LockFile, onDisk: string[]): string[] {
-  return onDisk.filter((name) => ownerOfSkill(lock, name) === null);
+  return onDisk.filter((name) => ownersOfSkill(lock, name).length === 0);
 }
