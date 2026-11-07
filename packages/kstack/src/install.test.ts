@@ -22,7 +22,7 @@ describe("install.sh", () => {
     });
     assert.equal(result.status, 0, result.stderr + result.stdout);
     const dest = join(home, ".cursor", "skills");
-    assert.equal(existsSync(join(dest, "brief", "SKILL.md")), true);
+    assert.equal(existsSync(join(dest, "secrets", "SKILL.md")), true);
     assert.equal(existsSync(join(dest, "humanizer-zh", "SKILL.md")), true);
     const names = readdirSync(dest);
     assert.ok(names.includes("ultra-review"));
@@ -41,7 +41,7 @@ describe("install.sh", () => {
       existsSync(join(home, ".cursor", "skills", "gitee-pr-workflow", "SKILL.md")),
       true,
     );
-    assert.equal(existsSync(join(home, ".cursor", "skills", "brief", "SKILL.md")), true);
+    assert.equal(existsSync(join(home, ".cursor", "skills", "secrets", "SKILL.md")), true);
   });
 
   it("copies a symlinked project skill as a real directory", () => {

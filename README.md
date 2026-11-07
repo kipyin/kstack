@@ -42,7 +42,7 @@ Where symlinks go: [kstack.toml](kstack.toml). Override with `--repo`, `--config
 **Done when.** Skills are linked and this prints `linked`:
 
 ```
-test -L ~/.cursor/skills/brief && echo linked
+test -L ~/.cursor/skills/secrets && echo linked
 ```
 
 `kstack status` ending in `status  clean` is the fuller check.
