@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
@@ -42,5 +42,19 @@ describe("install.sh", () => {
       true,
     );
     assert.equal(existsSync(join(home, ".cursor", "skills", "show-me", "SKILL.md")), true);
+  });
+
+  it("copies a symlinked project skill as a real directory", () => {
+    const repo = skillsRepoRoot();
+    const home = tempDir("kstack-home-");
+    const result = spawnSync("bash", [join(repo, "install.sh"), "xharness"], {
+      encoding: "utf8",
+      env: { ...process.env, HOME: home },
+    });
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    const copied = join(home, ".cursor", "skills", "poteto-mode");
+    assert.equal(lstatSync(copied).isDirectory(), true);
+    assert.equal(lstatSync(copied).isSymbolicLink(), false);
+    assert.equal(existsSync(join(copied, "SKILL.md")), true);
   });
 });

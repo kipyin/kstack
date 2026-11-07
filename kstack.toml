@@ -9,3 +9,6 @@ skills_repo = "~/Code/kstack"
 global = ["~/.agents/skills", "~/.cursor/skills", "~/.claude/skills"]
 lighthouse = ["~/Code/lighthouse/.agents/skills"]
 lightmind = ["~/Code/lightmind/.agents/skills"]
+lighthub = ["~/Code/lightxlab/lighthub/.agents/skills", "~/Code/lightxlab/lighthub/.claude/skills", "~/Code/lightxlab/lighthub/.cursor/skills"]
+xharness = ["~/Code/lightxlab/xharness/.agents/skills", "~/Code/lightxlab/xharness/.claude/skills", "~/Code/lightxlab/xharness/.cursor/skills"]
+lightology = ["~/Code/lightxlab/lightology/.agents/skills", "~/Code/lightxlab/lightology/.claude/skills", "~/Code/lightxlab/lightology/.cursor/skills"]

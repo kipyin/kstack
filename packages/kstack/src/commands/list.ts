@@ -1,10 +1,10 @@
-import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { exists, isDir } from "../fsutil.js";
+import { exists, isDir, listSkillDirs } from "../fsutil.js";
 import { parseListDir, scanRepo, scanTier } from "../inventory.js";
-import { ownerOfSkill } from "../lock.js";
+import { ownersOfSkill } from "../lock.js";
 import { resolvePath } from "../paths.js";
 import type { RepoContext, SkillRecord } from "../types.js";
+import { TIERS } from "../types.js";
 import { assertNever } from "../never.js";
 
 function formatRecord(skill: SkillRecord): string {
@@ -31,19 +31,16 @@ function listPath(ctx: RepoContext, path: string): void {
   if (!isDir(abs)) {
     throw new Error(`not a directory: ${abs}`);
   }
-  const names = readdirSync(abs, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
-    .map((entry) => entry.name)
-    .sort();
+  const names = listSkillDirs(abs);
   console.log(`${abs}`);
   if (names.length === 0) {
     console.log("  (empty)");
     return;
   }
   for (const name of names) {
-    const owner = ownerOfSkill(ctx.lock, name);
-    const kind = owner === null ? "first-party" : "lock-owned";
-    const ownerSuffix = owner === null ? "" : `  ${owner}`;
+    const owners = ownersOfSkill(ctx.lock, name);
+    const kind = owners.length === 0 ? "first-party" : "lock-owned";
+    const ownerSuffix = owners.length === 0 ? "" : `  ${owners.join(", ")}`;
     const missing = exists(join(abs, name, "SKILL.md")) ? "" : "  (missing SKILL.md)";
     console.log(`  ${name.padEnd(32)} ${kind}${ownerSuffix}${missing}`);
   }
@@ -54,7 +51,7 @@ export function runList(ctx: RepoContext, dir?: string): void {
   switch (parsed.kind) {
     case "all": {
       const records = scanRepo(ctx.repoRoot, ctx.lock);
-      for (const tier of ["global", "lighthouse", "lightmind"] as const) {
+      for (const tier of TIERS) {
         printRecords(`${tier}/`, records.filter((s) => s.tier === tier));
         console.log("");
       }

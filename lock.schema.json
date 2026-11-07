@@ -31,7 +31,18 @@
         },
         "tier": {
           "type": "string",
-          "enum": ["global", "lighthouse", "lightmind"]
+          "enum": ["global", "lighthouse", "lightmind", "lighthub", "xharness", "lightology"],
+          "description": "Primary tier. Equals the first entry of tiers when a package is vendored into more than one tier."
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["global", "lighthouse", "lightmind", "lighthub", "xharness", "lightology"]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Every tier this package is written into. Omit when that list is only tier."
         },
         "skills": {
           "type": "array",

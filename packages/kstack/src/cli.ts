@@ -5,6 +5,7 @@ import { runStatus } from "./commands/status.js";
 import { runSync } from "./commands/sync.js";
 import { runUpdate } from "./commands/update.js";
 import { locateRepo, type LocateOptions } from "./repo.js";
+import { TIERS } from "./types.js";
 import { assertNever } from "./never.js";
 
 const VERSION = "0.1.0";
@@ -15,16 +16,17 @@ Usage:
   kstack [--repo <path>] [--config <path>] <command> [args]
 
 Commands:
-  list [dir]                 Inventory a tier (global|lighthouse|lightmind), a path, or all tiers
+  list [dir]                 Inventory a tier, a path, or all tiers
   status                     Pins, first-party vs lock-owned, symlink health, drift
   link [--force]             Symlink ~/.cursor/skills (and friends) → this repo
   sync [pkg]                 Re-materialize current lock pins (no bump)
   update [pkg|skill]         Bump pin to latest, then write owned folders
-  add <source> --scope <tier> [--skill name]...
-                             Fetch once, write into a tier, add/update lock entries
+  add <source> --scope <tier> [--scope <tier>]... [--skill name]...
+                             Fetch once, write into one or more tiers, add/update lock entries
 
+Tiers: global, lighthouse, lightmind, lighthub, xharness, lightology.
 Mac: clone to ~/Code/kstack, then \`kstack link\`.
-Cloud VMs: run ./install.sh [global|lighthouse|lightmind|eloquent|pwc-graphic-elements] 
+Cloud VMs: run ./install.sh [global|lighthouse|lightmind|lighthub|xharness|lightology|eloquent|pwc-graphic-elements] 
 
 Overrides: --repo, --config, KSTACK_REPO, KSTACK_CONFIG.
 `;
@@ -173,11 +175,6 @@ export function parseArgv(argv: string[]): ParsedCli {
   return { locate, command, rest, flags };
 }
 
-function firstFlag(flags: Map<string, string[]>, name: string): string | undefined {
-  const values = flags.get(name);
-  return values?.[0];
-}
-
 export function dispatch(parsed: ParsedCli): number {
   switch (parsed.command) {
     case "help":
@@ -234,16 +231,16 @@ export function dispatch(parsed: ParsedCli): number {
       const source = parsed.rest[0];
       if (source === undefined || parsed.rest.length !== 1) {
         throw new Error(
-          "usage: kstack add <npx-source> --scope global|lighthouse|lightmind [--skill name]...",
+          `usage: kstack add <npx-source> --scope ${TIERS.join("|")} [--skill name]...`,
         );
       }
-      const scope = firstFlag(parsed.flags, "scope");
-      if (scope === undefined) {
-        throw new Error("--scope is required (global|lighthouse|lightmind)");
+      const scopes = parsed.flags.get("scope") ?? [];
+      if (scopes.length === 0) {
+        throw new Error(`--scope is required (${TIERS.join("|")})`);
       }
       runAdd(ctx, {
         source,
-        scope,
+        scope: scopes,
         skills: parsed.flags.get("skill") ?? [],
       });
       return 0;

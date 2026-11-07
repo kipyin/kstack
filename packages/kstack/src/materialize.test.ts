@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { loadLock } from "./lock.js";
@@ -75,6 +75,67 @@ describe("kstack add / first-party protection", () => {
     assert.match(
       readFileSync(join(repo, "global", "show-me", "SKILL.md"), "utf8"),
       /first-party/,
+    );
+  });
+});
+
+describe("kstack add / project tiers", () => {
+  it("writes one source into each requested tier", () => {
+    const repo = writeRepo({});
+    const source = tempDir("kstack-src-");
+    writeSkill(source, "demo-tool", "wrapper");
+    const ctx = locateRepo({ repo });
+    runAdd(ctx, {
+      source,
+      scope: ["lighthub", "xharness", "lightology"],
+      skills: ["demo-tool"],
+    });
+
+    for (const tier of ["lighthub", "xharness", "lightology"]) {
+      assert.match(
+        readFileSync(join(repo, tier, "demo-tool", "SKILL.md"), "utf8"),
+        /wrapper/,
+      );
+    }
+    assert.equal(lstatSync(join(repo, "lighthub", "demo-tool")).isDirectory(), true);
+    assert.equal(lstatSync(join(repo, "xharness", "demo-tool")).isSymbolicLink(), true);
+    assert.equal(lstatSync(join(repo, "lightology", "demo-tool")).isSymbolicLink(), true);
+    assert.equal(readlinkSync(join(repo, "xharness", "demo-tool")), "../lighthub/demo-tool");
+    assert.equal(readlinkSync(join(repo, "lightology", "demo-tool")), "../lighthub/demo-tool");
+    const lock = loadLock(join(repo, "lock.json"));
+    assert.deepEqual(lock.packages[source]?.tiers, [
+      "lighthub",
+      "xharness",
+      "lightology",
+    ]);
+  });
+
+  it("allows a project tier to reuse a skill name owned in global", () => {
+    const source = tempDir("kstack-src-");
+    writeSkill(source, "tdd", "pstack-tdd");
+    const globalSrc = "mattpocock/skills";
+    const repo = writeRepo({
+      lock: {
+        version: 1,
+        comment: "test",
+        packages: {
+          [globalSrc]: {
+            ...emptyPackage(globalSrc, "global", ["tdd"]),
+            pin: "abc",
+          },
+        },
+      },
+    });
+    writeSkill(join(repo, "global"), "tdd", "matt-tdd");
+    const ctx = locateRepo({ repo });
+    runAdd(ctx, { source, scope: "lighthub", skills: ["tdd"] });
+    assert.match(
+      readFileSync(join(repo, "lighthub", "tdd", "SKILL.md"), "utf8"),
+      /pstack-tdd/,
+    );
+    assert.match(
+      readFileSync(join(repo, "global", "tdd", "SKILL.md"), "utf8"),
+      /matt-tdd/,
     );
   });
 });

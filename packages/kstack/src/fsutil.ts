@@ -8,6 +8,7 @@ import {
   realpathSync,
   rmSync,
   statSync,
+  symlinkSync,
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
@@ -51,9 +52,25 @@ export function listSkillDirs(root: string): string[] {
     return [];
   }
   return readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+    .filter((entry) => {
+      if (entry.name.startsWith(".")) {
+        return false;
+      }
+      if (entry.isDirectory()) {
+        return true;
+      }
+      return entry.isSymbolicLink() && isDir(join(root, entry.name));
+    })
     .map((entry) => entry.name)
     .sort();
+}
+
+export function symlinkSkillDir(dest: string, source: string): void {
+  if (isSymlink(dest) || existsSync(dest)) {
+    rmSync(dest, { recursive: true, force: true });
+  }
+  ensureDir(dirname(dest));
+  symlinkSync(relative(dirname(dest), source), dest);
 }
 
 export function isInsideRoot(root: string, candidate: string): boolean {

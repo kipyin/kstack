@@ -7,7 +7,6 @@ import { scanTier } from "../inventory.js";
 import { resolvePath } from "../paths.js";
 import type { RepoContext, SkillRecord } from "../types.js";
 import { TIERS } from "../types.js";
-import { assertNever } from "../never.js";
 
 export type LinkOptions = {
   force: boolean;
@@ -70,14 +69,6 @@ export function runLink(ctx: RepoContext, options: LinkOptions): void {
   let skippedPaths = 0;
 
   for (const tier of TIERS) {
-    switch (tier) {
-      case "global":
-      case "lighthouse":
-      case "lightmind":
-        break;
-      default:
-        assertNever(tier);
-    }
     const skills = scanTier(ctx.repoRoot, ctx.lock, tier);
     for (const raw of pathsForTier(ctx.config, tier)) {
       const prepared = prepareLinkDir(raw);
