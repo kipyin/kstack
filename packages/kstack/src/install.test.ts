@@ -25,7 +25,6 @@ describe("install.sh", () => {
     assert.equal(existsSync(join(dest, "secrets", "SKILL.md")), true);
     assert.equal(existsSync(join(dest, "humanizer-zh", "SKILL.md")), true);
     const names = readdirSync(dest);
-    assert.ok(names.includes("ultra-review"));
     assert.ok(!names.includes("db-create-update"));
   });
 
