@@ -20,64 +20,20 @@
       "pin": "c55ee46073ed923f86ce59a5eb3b6d895095d1b7",
       "tier": "global",
       "skills": [
-        "ask-matt",
-        "code-review",
-        "codebase-design",
-        "diagnosing-bugs",
-        "domain-modeling",
         "grill-me",
-        "grill-with-docs",
-        "grilling",
-        "handoff",
-        "implement",
-        "improve-codebase-architecture",
-        "prototype",
-        "research",
         "resolving-merge-conflicts",
         "setup-matt-pocock-skills",
-        "tdd",
         "teach",
-        "to-questionnaire",
-        "to-spec",
-        "to-tickets",
-        "triage",
-        "wait-what",
-        "wayfinder",
         "wizard",
-        "writing-for-agents",
-        "implement-spec",
-        "pr",
-        "retro"
+        "pr"
       ],
       "hashes": {
-        "ask-matt": "b25d86fb36b1d294eeead5d7db529f86135f9671f2afcd607579a63bb2213769",
-        "code-review": "47f4e52c21694def9c7c11cbfbf891ca35eac7a93e395797515be3c8a409ae50",
-        "codebase-design": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
-        "diagnosing-bugs": "77f3cf31bc99b2f49af943222526531fcc9fc41d047626d3640e875e85af3e84",
-        "domain-modeling": "327a2b50620e2fd70abc6893cd6965e76b20f8d0adb0dc2c8d5eb3845efb643e",
         "grill-me": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
-        "grill-with-docs": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe",
-        "grilling": "10ff989e7498b23b5acb49d5048f11dcd906757d2f79c5cdf8a00001381296f2",
-        "handoff": "7c62de979fdc7ac32fb5ddb2146156c917f80ee070d30fadc9d40343c4b6ed25",
-        "implement": "6d3fd9e83b8f36e5213854779db49b256a457a7ebb4a503e53fa7dcff696adc3",
-        "improve-codebase-architecture": "d1ac25511a936ff4250a48dbcefda363837d6bb9321b3cba73df99fa37270a75",
-        "prototype": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3",
-        "research": "985569f15739c713d6784887c3d186d4ef9ac85bec5ad9c068d25bf0739928e4",
         "resolving-merge-conflicts": "9d8114f8ef0b31f535a265fc05c364bd8cf2e2895a830040e06c22acb11f54b0",
         "setup-matt-pocock-skills": "2bcd89e97777cdb705914424e39c97d5db524c8eb4eafac8120778a07774f0ec",
-        "tdd": "cb01f66bebfaa25fa1f88e6b7e769cd9fd9f35b1120b8563749820738814c927",
         "teach": "a32df9dcdfc0c4fdc1c98e1ed3940c5f56b84c1aa90ff60346f32b8b53915b43",
-        "to-questionnaire": "b5eb929842ee0e93d867c5e906d183d350f2f2d149eaeaa86967d94d8eda1d3b",
-        "to-spec": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
-        "to-tickets": "5c9fba69845c2519b9b35b9af42ae5142c21f8ca15ac2123dc2722002c8058ae",
-        "triage": "623a2ed692bdc77d2090e2a3dea3b627dd722ad3bbaca0be83aada75292c8fc4",
-        "wait-what": "e3f44e3ccbc0e7b62f20ba70b295fc9c9f4aa3f96c77168faee1c71bacbf4215",
-        "wayfinder": "fee6e1d0c50f0e736b4ef8a599060c959afae904c9a97d82c97f049fcc3aa0f1",
         "wizard": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
-        "writing-for-agents": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
-        "implement-spec": "f703b5f41df9c2202e19540d203e0d5fc32613572a838a070136cc22e712b129",
-        "pr": "e91dc57fa0ee1d8d2fd35562425c943d377f0acdfba6245858a619990fcff0e8",
-        "retro": "33fbc28568e3146f20fd908b12998bc0ab30aa4f4c87288199a40793efa94696"
+        "pr": "e91dc57fa0ee1d8d2fd35562425c943d377f0acdfba6245858a619990fcff0e8"
       },
       "fetchedAt": "2026-09-25T15:37:42.797Z"
     },
@@ -231,20 +187,6 @@
         "why": "bc5f13a71c2023ff6c109ff5c12580b024757ef6e04d9925c68b2f501e993d17"
       },
       "fetchedAt": "2026-11-07T02:47:03.935Z"
-    },
-    "pbakaus/impeccable": {
-      "source": "pbakaus/impeccable",
-      "pin": "0d6b47ea19b63afe15e3f93a44d5d9fbbc6fd275",
-      "tier": "global",
-      "skills": [
-        "audit",
-        "impeccable"
-      ],
-      "hashes": {
-        "audit": "4cde685f70c2851d74b5521cefec477756e332e8f3974da53c7a59f858a2a484",
-        "impeccable": "9e6c2ef111f5f46dcc5fd21fdca838579472d3b640b05acd5a1bf1e555a3ea22"
-      },
-      "fetchedAt": "2026-09-30T13:46:18.505Z"
     }
   }
 }
