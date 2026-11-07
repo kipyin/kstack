@@ -13,9 +13,9 @@ describe("lock.json", () => {
     assert.ok(lock.packages["mattpocock/skills"]);
     const matt = lock.packages["mattpocock/skills"];
     assert.ok(matt !== undefined);
-    assert.equal(matt.skills.length, 6);
+    assert.equal(matt.skills.length, 3);
     assert.ok(matt.skills.includes("wizard"));
-    assert.equal(selectPackages(lock, "grill-me")[0], "mattpocock/skills");
+    assert.equal(selectPackages(lock, "wizard")[0], "mattpocock/skills");
     assert.equal(selectPackages(lock, "officecli")[0], "iofficeai/officecli");
   });
 

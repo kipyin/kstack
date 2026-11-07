@@ -20,20 +20,14 @@
       "pin": "c55ee46073ed923f86ce59a5eb3b6d895095d1b7",
       "tier": "global",
       "skills": [
-        "grill-me",
-        "resolving-merge-conflicts",
         "setup-matt-pocock-skills",
         "teach",
-        "wizard",
-        "pr"
+        "wizard"
       ],
       "hashes": {
-        "grill-me": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
-        "resolving-merge-conflicts": "9d8114f8ef0b31f535a265fc05c364bd8cf2e2895a830040e06c22acb11f54b0",
         "setup-matt-pocock-skills": "2bcd89e97777cdb705914424e39c97d5db524c8eb4eafac8120778a07774f0ec",
         "teach": "a32df9dcdfc0c4fdc1c98e1ed3940c5f56b84c1aa90ff60346f32b8b53915b43",
-        "wizard": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
-        "pr": "e91dc57fa0ee1d8d2fd35562425c943d377f0acdfba6245858a619990fcff0e8"
+        "wizard": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1"
       },
       "fetchedAt": "2026-09-25T15:37:42.797Z"
     },
