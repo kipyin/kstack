@@ -5,6 +5,7 @@ import { readText } from "./fsutil.js";
 
 type RawConfig = {
   paths?: unknown;
+  instructions?: unknown;
 };
 
 function asStringArray(value: unknown, label: string): string[] {
@@ -34,7 +35,20 @@ export function parseConfigToml(text: string): KstackConfig {
     }
   }
 
-  return { paths };
+  let instructionPaths: string[] = [];
+  if (raw.instructions !== undefined) {
+    if (raw.instructions === null || typeof raw.instructions !== "object" || Array.isArray(raw.instructions)) {
+      throw new Error("[instructions] must be a table");
+    }
+    for (const [key, value] of Object.entries(raw.instructions)) {
+      if (key !== "paths") {
+        throw new Error(`unknown instructions key '${key}'`);
+      }
+      instructionPaths = asStringArray(value, "instructions.paths");
+    }
+  }
+
+  return { paths, instructionPaths };
 }
 
 export function loadConfig(path: string): KstackConfig {

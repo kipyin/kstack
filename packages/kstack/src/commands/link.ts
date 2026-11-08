@@ -4,12 +4,16 @@ import { homedir } from "node:os";
 import { pathsForTier } from "../config.js";
 import { exists, isDir, isSymlink } from "../fsutil.js";
 import { scanTier } from "../inventory.js";
+import { linkInstructions } from "../instructions.js";
 import { resolvePath } from "../paths.js";
 import type { RepoContext, SkillRecord } from "../types.js";
 import { TIERS } from "../types.js";
 
 export type LinkOptions = {
   force: boolean;
+  backupInstructions?: boolean;
+  dryRun?: boolean;
+  instructionsOnly?: boolean;
 };
 
 export type LinkDirPrep =
@@ -64,6 +68,8 @@ function linkOne(
 }
 
 export function runLink(ctx: RepoContext, options: LinkOptions): void {
+  linkInstructions(ctx, options.backupInstructions ?? false, options.dryRun ?? false);
+  if (options.dryRun || options.instructionsOnly) return;
   let created = 0;
   let replaced = 0;
   let skippedPaths = 0;

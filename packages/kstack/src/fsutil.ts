@@ -93,7 +93,7 @@ function copyTree(from: string, to: string, srcRoot: string): void {
       } catch {
         continue;
       }
-      if (!isInsideRoot(srcRoot, target)) {
+      if (!isInsideRoot(realpathSync(srcRoot), target)) {
         continue;
       }
       let st;

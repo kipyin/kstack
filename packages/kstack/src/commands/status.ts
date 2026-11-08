@@ -1,9 +1,10 @@
 import { join } from "node:path";
-import { readlinkSync, realpathSync } from "node:fs";
+import { readlinkSync, realpathSync, statSync } from "node:fs";
 import { pathsForTier } from "../config.js";
 import { exists, isDir, isSymlink } from "../fsutil.js";
 import { sha256File } from "../hash.js";
 import { scanRepo, tierDir } from "../inventory.js";
+import { inspectInstructionLink, instructionLinks } from "../instructions.js";
 import { packageIds, packageTiers } from "../lock.js";
 import { skillMdPath } from "../discover.js";
 import { resolvePath } from "../paths.js";
@@ -141,6 +142,22 @@ export function runStatus(ctx: RepoContext): number {
         }
         console.log(`  ${dest}  ${health}`);
       }
+    }
+  }
+
+  const instructions = instructionLinks(ctx);
+  if (instructions.length > 0) {
+    console.log("");
+    console.log("instructions");
+    const source = join(ctx.repoRoot, "global", "AGENTS.md");
+    if (!exists(source) || !statSync(source).isFile()) {
+      console.log(`  ${source}  missing source`);
+      drift += 1;
+    }
+    for (const link of instructions) {
+      const health = inspectInstructionLink(link);
+      if (health !== "ok") drift += 1;
+      console.log(`  ${link.dest}  ${health}`);
     }
   }
 

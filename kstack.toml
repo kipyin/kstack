@@ -2,8 +2,20 @@
 # This file lives at the repo root. Mac checkout default: ~/Code/kstack.
 #
 # Overrides: --repo, --config, KSTACK_REPO, KSTACK_CONFIG
+# Instruction paths are deliberately explicit; adjust them for custom harness homes.
 
 skills_repo = "~/Code/kstack"
+
+[instructions]
+paths = [
+  "~/AGENTS.md", # Pi and Cursor discover this as an ancestor when working under home.
+  "~/.codex/AGENTS.md",
+  "~/.claude/CLAUDE.md",
+  "~/.grok/AGENTS.md",
+  "~/.gemini/GEMINI.md",
+  "~/.config/opencode/AGENTS.md",
+  "~/.copilot/copilot-instructions.md",
+]
 
 [paths]
 global = ["~/.agents/skills", "~/.cursor/skills", "~/.claude/skills"]

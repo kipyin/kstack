@@ -35,7 +35,9 @@ cd ~/Code/kstack/packages/kstack && npm install && npm run build && npm link
 cd ~/Code/kstack && kstack link
 ```
 
-`kstack link` replaces existing symlinks. A real directory in the way fails the command. `--force` deletes that directory. Only use it if you mean to throw the copy away.
+`kstack link` links the shared instructions as well as skills. It preflights instruction destinations before touching skills; existing instruction files and unrelated symlinks stop the command. To review and migrate those files, see [Shared agent instructions](#shared-agent-instructions).
+
+For skill directories, `kstack link` replaces existing symlinks. A real directory in the way fails the command; `--force` deletes that directory. `--force` never replaces instruction files.
 
 Where symlinks go: [kstack.toml](kstack.toml). Override with `--repo`, `--config`, `KSTACK_REPO`, or `KSTACK_CONFIG`.
 
@@ -46,6 +48,22 @@ test -L ~/.cursor/skills/secrets && echo linked
 ```
 
 `kstack status` ending in `status  clean` is the fuller check.
+
+## Shared agent instructions
+
+[global/AGENTS.md](global/AGENTS.md) is the shared source for the instruction links in [kstack.toml](kstack.toml): Codex, Claude Code, Grok Build, Gemini CLI, OpenCode, Copilot CLI, and the home-directory ancestor entry used by Pi and Cursor Agent. Each configured destination is a symlink to the same file; updates to the checkout immediately affect new sessions. The paths are explicit: edit `[instructions].paths` when a harness uses a custom home directory, or remove an entry for a harness you do not use. The `~` and `${HOME}` forms are supported.
+
+Before replacing an existing instruction file, review the proposed links and migrate any harness-specific content. The current shared file contains the RTK output instructions as ordinary Markdown, so it does not depend on Claude's `@` import syntax. For example, Claude-specific pstack model overrides can remain in `~/.claude/pstack-models.md` and be loaded via a user rule containing `@~/.claude/pstack-models.md` in `~/.claude/rules/`. Review any other existing includes and keep the parts you need before proceeding.
+
+```sh
+kstack link --dry-run                                      # preview instruction links
+kstack link --instructions-only --backup-instructions      # save conflicts, then link
+kstack status                          # check instruction and skill links
+```
+
+Existing files and unrelated links are saved as `<path>.kstack-backup` only when `--backup-instructions` is supplied. The command refuses directories and existing `.kstack-backup` files, even with `--force`. It does not merge or automatically apply the backed-up contents. If Codex has an `AGENTS.override.md`, or Pi has an `AGENTS.override.md` in its agent directory, that file takes precedence over the shared link. Symlinks require a checkout that remains present. Restart each harness after linking. Claude Code's Cowork sessions may skip user files that are symlinks outside the session workspace.
+
+The `~/AGENTS.md` link covers workspaces below the home directory for harnesses that scan ancestors. Pi loads it there; for Pi workspaces outside home, add `~/.pi/agent/AGENTS.md` to `[instructions].paths`. Pi 1.4.0 loads both paths separately when both are configured and the workspace is below home. The installed Cursor Agent's local rules loader walks ancestor directories and follows files there, but Cursor documents `AGENTS.md` as project-scoped; loading this file in all Cursor surfaces and workspaces outside home has not been verified. Cursor's global user rules use a different mechanism. The Cloud installer below copies Cursor skills only and does not modify user instruction files.
 
 ## Cloud env build
 
@@ -94,7 +112,7 @@ Put `GIT_SIGNING_KEY` in the Cloud env secret, not in git.
 ```
 kstack list [dir]
 kstack status
-kstack link [--force]
+kstack link [--force] [--backup-instructions] [--instructions-only] [--dry-run]
 kstack sync [pkg]              # rewrite owned folders at the current pin
 kstack update [pkg|skill]      # bump pin, then rewrite owned folders
 kstack add <source> --scope global|lighthouse|lightmind|lighthub|xharness|lightology [--skill name]...
