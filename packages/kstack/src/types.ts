@@ -31,6 +31,7 @@ export type LinkPaths = Record<Tier, string[]>;
 
 export type KstackConfig = {
   paths: LinkPaths;
+  instructionPaths: string[];
 };
 
 export type SkillRecord = {

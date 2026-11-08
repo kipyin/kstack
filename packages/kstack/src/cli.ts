@@ -18,7 +18,9 @@ Usage:
 Commands:
   list [dir]                 Inventory a tier, a path, or all tiers
   status                     Pins, first-party vs lock-owned, symlink health, drift
-  link [--force]             Symlink ~/.cursor/skills (and friends) → this repo
+  link [--force] [--backup-instructions] [--instructions-only] [--dry-run]
+                             Link configured skills and shared instructions
+                             --dry-run previews instruction links only
   sync [pkg]                 Re-materialize current lock pins (no bump)
   update [pkg|skill]         Bump pin to latest, then write owned folders
   add <source> --scope <tier> [--scope <tier>]... [--skill name]...
@@ -100,8 +102,8 @@ export function parseArgv(argv: string[]): ParsedCli {
       i += 1;
       continue;
     }
-    if (arg === "--force") {
-      pushFlag("force", "true");
+    if (arg === "--force" || arg === "--backup-instructions" || arg === "--dry-run" || arg === "--instructions-only") {
+      pushFlag(arg.slice(2), "true");
       i += 1;
       continue;
     }
@@ -210,7 +212,12 @@ export function dispatch(parsed: ParsedCli): number {
       if (parsed.rest.length > 0) {
         throw new Error("link does not take arguments");
       }
-      runLink(ctx, { force: parsed.flags.has("force") });
+      runLink(ctx, {
+        force: parsed.flags.has("force"),
+        backupInstructions: parsed.flags.has("backup-instructions"),
+        dryRun: parsed.flags.has("dry-run"),
+        instructionsOnly: parsed.flags.has("instructions-only"),
+      });
       return 0;
     }
     case "sync": {

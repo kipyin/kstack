@@ -29,10 +29,13 @@ describe("parseArgv", () => {
     assert.deepEqual(parsed.flags.get("skill"), ["one", "two"]);
   });
 
-  it("parses link --force", () => {
-    const parsed = parseArgv(["link", "--force"]);
+  it("parses link migration and preview flags", () => {
+    const parsed = parseArgv(["link", "--force", "--backup-instructions", "--dry-run", "--instructions-only"]);
     assert.equal(parsed.command, "link");
     assert.equal(parsed.flags.has("force"), true);
+    assert.equal(parsed.flags.has("backup-instructions"), true);
+    assert.equal(parsed.flags.has("dry-run"), true);
+    assert.equal(parsed.flags.has("instructions-only"), true);
   });
 
   it("rejects unknown flags", () => {
