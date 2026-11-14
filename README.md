@@ -53,7 +53,7 @@ test -L ~/.cursor/skills/secrets && echo linked
 
 [global/AGENTS.md](global/AGENTS.md) is the shared source for the instruction links in [kstack.toml](kstack.toml): Codex, Claude Code, Grok Build, Gemini CLI, OpenCode, Copilot CLI, and the home-directory ancestor entry used by Pi and Cursor Agent. Each configured destination is a symlink to the same file; updates to the checkout immediately affect new sessions. The paths are explicit: edit `[instructions].paths` when a harness uses a custom home directory, or remove an entry for a harness you do not use. The `~` and `${HOME}` forms are supported.
 
-Before replacing an existing instruction file, review the proposed links and migrate any harness-specific content. The current shared file contains the RTK output instructions as ordinary Markdown, so it does not depend on Claude's `@` import syntax. For example, Claude-specific pstack model overrides can remain in `~/.claude/pstack-models.md` and be loaded via a user rule containing `@~/.claude/pstack-models.md` in `~/.claude/rules/`. Review any other existing includes and keep the parts you need before proceeding.
+Before replacing an existing instruction file, review the proposed links and migrate any harness-specific content. The current shared file contains the RTK output instructions as ordinary Markdown, so it does not depend on Claude's `@` import syntax. Review any existing includes and keep the parts you need before proceeding.
 
 ```sh
 kstack link --dry-run                                      # preview instruction links
