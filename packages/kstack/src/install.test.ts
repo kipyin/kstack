@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
-import { skillsRepoRoot, tempDir } from "./testutil.js";
+import { skillsRepoRoot, tempDir, writeSkill } from "./testutil.js";
 
 describe("install.sh", () => {
   it("never calls npx and copies global skills into ~/.cursor/skills", () => {
@@ -44,14 +44,19 @@ describe("install.sh", () => {
   });
 
   it("copies a symlinked project skill as a real directory", () => {
-    const repo = skillsRepoRoot();
+    const repo = tempDir("kstack-repo-");
+    copyFileSync(join(skillsRepoRoot(), "install.sh"), join(repo, "install.sh"));
+    mkdirSync(join(repo, "global"));
+    writeSkill(join(repo, "lighthub"), "demo-tool");
+    mkdirSync(join(repo, "xharness"));
+    symlinkSync("../lighthub/demo-tool", join(repo, "xharness", "demo-tool"));
     const home = tempDir("kstack-home-");
     const result = spawnSync("bash", [join(repo, "install.sh"), "xharness"], {
       encoding: "utf8",
       env: { ...process.env, HOME: home },
     });
     assert.equal(result.status, 0, result.stderr + result.stdout);
-    const copied = join(home, ".cursor", "skills", "poteto-mode");
+    const copied = join(home, ".cursor", "skills", "demo-tool");
     assert.equal(lstatSync(copied).isDirectory(), true);
     assert.equal(lstatSync(copied).isSymbolicLink(), false);
     assert.equal(existsSync(join(copied, "SKILL.md")), true);

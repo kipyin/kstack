@@ -112,7 +112,7 @@ describe("kstack add / project tiers", () => {
 
   it("allows a project tier to reuse a skill name owned in global", () => {
     const source = tempDir("kstack-src-");
-    writeSkill(source, "tdd", "pstack-tdd");
+    writeSkill(source, "tdd", "project-tdd");
     const globalSrc = "mattpocock/skills";
     const repo = writeRepo({
       lock: {
@@ -131,7 +131,7 @@ describe("kstack add / project tiers", () => {
     runAdd(ctx, { source, scope: "lighthub", skills: ["tdd"] });
     assert.match(
       readFileSync(join(repo, "lighthub", "tdd", "SKILL.md"), "utf8"),
-      /pstack-tdd/,
+      /project-tdd/,
     );
     assert.match(
       readFileSync(join(repo, "global", "tdd", "SKILL.md"), "utf8"),
